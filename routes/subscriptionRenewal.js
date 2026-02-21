@@ -136,10 +136,19 @@ router.post('/reactivate', authMiddleware, async (req, res) => {
 
         const subscription = subscriptions[0];
 
-        // Reaktiviraj subscription
+        // Dohvati subscription_expires_at iz korisnici tabele
+        // next_billing_date MORA biti isti kao subscription_expires_at
+        const [users] = await db.query(
+            'SELECT subscription_expires_at FROM korisnici WHERE id = ?',
+            [userId]
+        );
+
+        const subscriptionExpiresAt = users.length > 0 ? users[0].subscription_expires_at : null;
+
+        // Reaktiviraj subscription i postavi ispravan next_billing_date
         await db.query(
-            'UPDATE recurring_subscriptions SET is_active = 1, updated_at = NOW() WHERE id = ?',
-            [subscription.id]
+            'UPDATE recurring_subscriptions SET is_active = 1, next_billing_date = ?, updated_at = NOW() WHERE id = ?',
+            [subscriptionExpiresAt || subscription.next_billing_date, subscription.id]
         );
 
         // Ažuriraj status u korisnici tabeli
@@ -148,14 +157,15 @@ router.post('/reactivate', authMiddleware, async (req, res) => {
             ['active', userId]
         );
 
-        console.log(`✅ Subscription reactivated for user ID: ${userId}`);
+        const nextBilling = subscriptionExpiresAt || subscription.next_billing_date;
+        console.log(`✅ Subscription reactivated for user ID: ${userId}, next billing: ${nextBilling}`);
 
         res.json({
             success: true,
             message: 'Automatsko produžavanje je ponovo aktivirano!',
             subscription: {
                 isActive: true,
-                nextBillingDate: subscription.next_billing_date
+                nextBillingDate: nextBilling
             }
         });
 
