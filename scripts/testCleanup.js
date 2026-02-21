@@ -12,26 +12,27 @@ async function runCleanup() {
     console.log('🕐 SUBSCRIPTION CLEANUP STARTED');
     console.log('========================================\n');
 
-    // 1. Prikaži sve aktivne korisnike i kad im ističe pretplata
+    // 1. Prikaži sve aktivne i cancelled korisnike i kad im ističe pretplata
     const [activeUsers] = await db.query(`
         SELECT id, email, subscription_status, subscription_expires_at 
         FROM korisnici 
-        WHERE subscription_status = 'active'
+        WHERE subscription_status IN ('active', 'cancelled')
         ORDER BY subscription_expires_at ASC
     `);
 
-    console.log(`📊 Currently active subscriptions: ${activeUsers.length}`);
+    console.log(`📊 Active/Cancelled subscriptions: ${activeUsers.length}`);
     activeUsers.forEach(user => {
-        const expired = new Date(user.subscription_expires_at) < new Date();
-        console.log(`   - User ${user.id} (${user.email}): expires ${user.subscription_expires_at} ${expired ? '⚠️ EXPIRED' : '✅ VALID'}`);
+        const expired = !user.subscription_expires_at || new Date(user.subscription_expires_at) < new Date();
+        const status = user.subscription_status.toUpperCase();
+        console.log(`   - User ${user.id} (${user.email}) [${status}]: expires ${user.subscription_expires_at || 'NULL'} ${expired ? '⚠️ EXPIRED' : '✅ VALID'}`);
     });
 
-    // 2. Ažuriraj istekle pretplate
+    // 2. Ažuriraj istekle pretplate (i active i cancelled)
     const [result] = await db.query(`
         UPDATE korisnici 
         SET subscription_status = 'expired' 
         WHERE subscription_expires_at < NOW() 
-        AND subscription_status = 'active'
+        AND subscription_status IN ('active', 'cancelled')
     `);
 
     const updatedCount = result.affectedRows;

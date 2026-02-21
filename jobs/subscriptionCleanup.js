@@ -26,11 +26,13 @@ function startSubscriptionCleanupJob() {
             console.log('🕐 Running daily subscription cleanup job...');
 
             // Ažuriraj sve istekle subscription-e
+            // Uključuje i 'cancelled' korisnike kojima je istekao datum
+            // (cancelled = otkazao auto-renewal ali ima pristup do isteka)
             const [result] = await db.query(`
                 UPDATE korisnici 
                 SET subscription_status = 'expired' 
                 WHERE subscription_expires_at < NOW() 
-                AND subscription_status = 'active'
+                AND subscription_status IN ('active', 'cancelled')
             `);
 
             const updatedCount = result.affectedRows;
