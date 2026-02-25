@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
+const helmet = require('helmet');
 const db = require('./db');
+const { globalLimiter } = require('./middleware/rateLimiter');
 
 // Uvoz svih vaših ruta
 const authRouter = require('./routes/auth');
@@ -27,6 +30,10 @@ const port = process.env.PORT || 5000;
 
 // === Middleware ===
 
+// VAŽNO: Pošto backend radi iza Nginx reverse proxy-ja,
+// ovo osigurava da se koristi prava IP adresa korisnika za rate limiting
+app.set('trust proxy', 1);
+
 // 1. CORS se primenjuje na sve zahteve, pa ide prvi
 const allowedOrigins = [
     'https://test-api.zecevicdev.com',
@@ -34,6 +41,19 @@ const allowedOrigins = [
     'http://localhost:3000'
 ];
 app.use(cors({ origin: allowedOrigins }));
+
+// 2. Globalni rate limiter - 100 req/min po IP
+app.use(globalLimiter);
+
+// 3. Helmet - HTTP security headers (XSS, clickjacking, HSTS, itd.)
+// contentSecurityPolicy je isključen jer može da blokira CDN-ove i fontove
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
+
+// 4. Compression - gzip kompresija svih odgovora (~70% manja veličina)
+app.use(compression());
 
 // 3. ZATIM: JSON parser za sve ostale rute
 app.use(express.json());

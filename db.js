@@ -7,7 +7,9 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 25,     // Povećano sa 10 za bolju konkurentnost
+    maxIdle: 10,             // Drži max 10 idle konekcija (oslobađa resurse)
+    idleTimeout: 60000,      // Zatvori idle konekcije posle 60s
     queueLimit: 0
 });
 

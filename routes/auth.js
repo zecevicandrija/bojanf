@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // 1. Uvozimo jsonwebtoken
+const jwt = require('jsonwebtoken');
 const authMiddleware = require('../middleware/token');
+const { authLimiter } = require('../middleware/rateLimiter');
 
-// Endpoint za registraciju korisnika (ostaje isti kao što smo ga sredili)
-router.post('/register', async (req, res) => {
+// Endpoint za registraciju korisnika (rate limited - 10 req/min)
+router.post('/register', authLimiter, async (req, res) => {
     try {
         const { ime, prezime, email, sifra, uloga } = req.body;
         if (!ime || !prezime || !email || !sifra || !uloga) {
@@ -26,8 +27,8 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Endpoint za prijavljivanje (login) korisnika
-router.post('/login', async (req, res) => {
+// Endpoint za prijavljivanje (login) korisnika (rate limited - 10 req/min)
+router.post('/login', authLimiter, async (req, res) => {
     try {
         const { email, sifra } = req.body;
         if (!email || !sifra) {

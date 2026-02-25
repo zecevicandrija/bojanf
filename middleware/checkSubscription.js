@@ -1,18 +1,17 @@
 /**
  * Subscription Check Middleware
  * Proverava da li korisnik ima aktivnu pretplatu pre pristupa zaštićenim rutama
+ * 
+ * OPTIMIZACIJA: Koristi 60s in-memory cache da ne udara u DB na svakom zahtevu.
+ * Kada korisnik klikće po lekcijama, umesto 10+ DB upita u minutu → samo 1.
  */
 
 const db = require('../db');
+const NodeCache = require('node-cache');
 
-/**
- * Middleware koji proverava subscription status
- * Poziva se NA SVAKOM ZAHTEVU za zaštićene rute
- * 
- * Provera se dešava u realnom vremenu:
- * - Ako je subscription_expires_at < trenutni datum → blokira pristup
- * - Ako je subscription_status !== 'active' → blokira pristup
- */
+// Cache za subscription status — TTL 60 sekundi, provera svakih 120s
+const subscriptionCache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
+
 async function checkSubscription(req, res, next) {
     try {
         const userId = req.user?.id;
@@ -24,20 +23,31 @@ async function checkSubscription(req, res, next) {
             });
         }
 
-        // Dohvati fresh subscription podatke iz baze
-        const [users] = await db.query(
-            'SELECT id, subscription_expires_at, subscription_status FROM korisnici WHERE id = ?',
-            [userId]
-        );
+        // Proveri cache prvo — ako smo već proverili ovog korisnika u poslednjih 60s
+        const cacheKey = `sub_${userId}`;
+        const cachedUser = subscriptionCache.get(cacheKey);
 
-        if (users.length === 0) {
-            return res.status(404).json({
-                error: 'User not found',
-                message: 'Korisnik nije pronađen'
-            });
+        let user;
+        if (cachedUser) {
+            // Cache HIT — ne ide u bazu
+            user = cachedUser;
+        } else {
+            // Cache MISS — dohvati iz baze i keširaj
+            const [users] = await db.query(
+                'SELECT id, subscription_expires_at, subscription_status FROM korisnici WHERE id = ?',
+                [userId]
+            );
+
+            if (users.length === 0) {
+                return res.status(404).json({
+                    error: 'User not found',
+                    message: 'Korisnik nije pronađen'
+                });
+            }
+
+            user = users[0];
+            subscriptionCache.set(cacheKey, user); // Keširaj na 60s
         }
-
-        const user = users[0];
 
         // Provera 1: Da li uopšte ima subscription
         if (!user.subscription_expires_at) {
@@ -60,6 +70,7 @@ async function checkSubscription(req, res, next) {
                     'UPDATE korisnici SET subscription_status = ? WHERE id = ?',
                     ['expired', userId]
                 );
+                subscriptionCache.del(cacheKey); // Obriši keš jer se status promenio
             }
 
             return res.status(403).json({

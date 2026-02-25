@@ -11,12 +11,13 @@ const msuService = require('../utils/msuService');
 const generateRandomPassword = require('../utils/passwordGenerator');
 const { sendMsuWelcomeEmail, sendInvoiceEmail } = require('../utils/msuEmailHelper');
 const { createInvoice } = require('../utils/invoiceService');
+const { paymentLimiter } = require('../middleware/rateLimiter');
 
 /**
  * POST /api/msu/create-session
  * Creates a new MSU payment session - supports both logged-in and guest users
  */
-router.post('/create-session', async (req, res) => {
+router.post('/create-session', paymentLimiter, async (req, res) => {
     try {
         const { korisnikId, kursId: reqKursId, customerEmail, customerName, customerPhone, packageData } = req.body;
 
@@ -394,7 +395,6 @@ router.all('/callback-redirect', async (req, res) => {
                             console.log('✅ NEW USER CREATED:');
                             console.log(`   ID: ${userId}`);
                             console.log(`   Email: ${customerEmail}`);
-                            console.log(`   Password: ${password}`);
                             console.log(`   Subscription Expires: ${expiryDate.toISOString()}`);
                             console.log(`   Duration: ${subscriptionMonths} month(s)`);
                             console.log('========================================');

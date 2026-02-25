@@ -2,16 +2,18 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const db = require('../db');
-const uploadToBunny = require('../utils/bunnyHelper'); // Uvozimo naš Bunny.net helper
+const uploadToBunny = require('../utils/bunnyHelper');
+const { cacheMiddleware, invalidateCache } = require('../middleware/cacheMiddleware');
 
 // Multer ostaje isti
 const upload = multer({ storage: multer.memoryStorage() });
 
-// GET Svi kursevi
-router.get('/', async (req, res) => {
+// GET Svi kursevi (keširano 5 minuta)
+router.get('/', cacheMiddleware(300), async (req, res) => {
     try {
         const query = 'SELECT * FROM kursevi';
         const [results] = await db.query(query);
+        res.set('Cache-Control', 'public, max-age=300'); // Browser keš 5 minuta
         res.status(200).json(results);
     } catch (err) {
         console.error('Database error:', err);
@@ -19,8 +21,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET Specifičan kurs po ID-ju
-router.get('/:id', async (req, res) => {
+// GET Specifičan kurs po ID-ju (keširano 5 minuta)
+router.get('/:id', cacheMiddleware(300), async (req, res) => {
     try {
         const courseId = req.params.id;
         const query = 'SELECT * FROM kursevi WHERE id = ?';
@@ -28,6 +30,7 @@ router.get('/:id', async (req, res) => {
         if (results.length === 0) {
             return res.status(404).json({ error: 'Kurs nije pronađen' });
         }
+        res.set('Cache-Control', 'public, max-age=300'); // Browser keš 5 minuta
         res.status(200).json(results[0]);
     } catch (err) {
         console.error('Database error:', err);
@@ -74,6 +77,7 @@ router.post('/', upload.single('slika'), async (req, res) => {
         }
 
         await connection.commit();
+        invalidateCache('/api/kursevi'); // Obriši keš nakon dodavanja
         res.status(201).json({ message: 'Kurs i sekcije su uspešno dodati', courseId: noviKursId });
     } catch (error) {
         await connection.rollback();
@@ -115,6 +119,7 @@ router.put('/:id', upload.single('slika'), async (req, res) => {
         }
 
         res.status(200).json({ message: 'Kurs uspešno ažuriran' });
+        invalidateCache('/api/kursevi'); // Obriši keš nakon ažuriranja
     } catch (error) {
         console.error('Greška prilikom ažuriranja kursa:', error);
         res.status(500).json({ error: 'Došlo je do greške na serveru.' });
@@ -132,6 +137,7 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ error: `Kurs sa ID-jem ${courseId} nije pronađen` });
         }
         res.status(200).json({ message: `Kurs sa ID-jem ${courseId} uspešno obrisan` });
+        invalidateCache('/api/kursevi'); // Obriši keš nakon brisanja
     } catch (err) {
         console.error('Database error:', err);
         res.status(500).json({ error: 'Greška na serveru' });
@@ -142,7 +148,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/progres-sekcija/:kursId/korisnik/:korisnikId', async (req, res) => {
     try {
         const { kursId, korisnikId } = req.params;
-        
+
         // SQL UPIT JE ISPRAVLJEN DA UKLJUČUJE THUMBNAIL
         const query = `
             SELECT

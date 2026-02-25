@@ -4,6 +4,7 @@ const multer = require('multer');
 const db = require('../db');
 const authMiddleware = require('../middleware/token');
 const checkSubscription = require('../middleware/checkSubscription');
+const { cacheMiddleware, invalidateCache } = require('../middleware/cacheMiddleware');
 // Uvozimo ispravne funkcije iz našeg Bunny.js helpera
 const { createVideo, uploadVideo, getSecurePlayerUrl, createUploadCredentials } = require('../utils/bunny');
 
@@ -51,6 +52,7 @@ router.post('/', async (req, res) => {
         const query = 'INSERT INTO lekcije (course_id, title, content, video_url, sekcija_id, assignment) VALUES (?, ?, ?, ?, ?, ?)';
         await db.query(query, [course_id, title, content, video_guid, sekcija_id || null, assignment || null]);
 
+        invalidateCache('/api/lekcije'); // Obriši keš lekcija
         res.status(201).json({ message: 'Lekcija uspešno dodata.' });
     } catch (error) {
         console.error('Greška pri dodavanju lekcije:', error);
@@ -89,6 +91,7 @@ router.put('/:id', upload.single('video'), async (req, res) => {
         await db.query(query, [course_id, title, content, newVideoUrl, sekcija_id, assignment, lessonId]);
 
         res.status(200).json({ message: `Lekcija sa ID-jem ${lessonId} uspešno ažurirana.` });
+        invalidateCache('/api/lekcije'); // Obriši keš lekcija
     } catch (error) {
         console.error('Greška pri ažuriranju lekcije:', error);
         res.status(500).json({ error: 'Došlo je do greške na serveru.' });
@@ -132,8 +135,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET Lekcije po kursu (NEMA IZMENA)
-router.get('/course/:courseId', async (req, res) => {
+// GET Lekcije po kursu (keširano 5 minuta)
+router.get('/course/:courseId', cacheMiddleware(300), async (req, res) => {
     try {
         const { courseId } = req.params;
         const [results] = await db.query('SELECT * FROM lekcije WHERE course_id = ?', [courseId]);
@@ -153,6 +156,7 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ message: `Lekcija sa ID-jem ${lessonId} nije pronađena.` });
         }
         res.status(200).json({ message: `Lekcija sa ID-jem ${lessonId} uspešno obrisana.` });
+        invalidateCache('/api/lekcije'); // Obriši keš lekcija
     } catch (err) {
         console.error('Database error:', err);
         res.status(500).json({ error: 'Database error' });
@@ -162,8 +166,8 @@ router.delete('/:id', async (req, res) => {
 // =======================================================================
 // IZMENA: CEO ENDPOINT JE AŽURIRAN DA KORISTI NOVU 'sekcije' TABELU
 // =======================================================================
-// GET Sekcije po kursu
-router.get('/sections/:courseId', async (req, res) => {
+// GET Sekcije po kursu (keširano 10 minuta)
+router.get('/sections/:courseId', cacheMiddleware(600), async (req, res) => {
     try {
         const { courseId } = req.params;
         // Upit sada ide u tabelu `sekcije` i sortira po našoj `redosled` koloni
@@ -189,7 +193,7 @@ router.get('/count/:courseId', async (req, res) => {
     }
 });
 
-// DeepSeek AI ruta (NEMA IZMENA)
+// DeepSeek AI ruta
 router.post('/deepseek-review', async (req, res) => {
     const { code, language } = req.body;
     try {
