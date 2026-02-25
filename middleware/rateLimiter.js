@@ -17,7 +17,7 @@ const rateLimit = require('express-rate-limit');
 // Globalni rate limiter za SVE rute
 const globalLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,  // 1 minut
-    max: 100,                   // max 100 zahteva po IP u tom periodu
+    max: 300,                   // max 300 zahteva po IP u tom periodu
     standardHeaders: true,      // Vraća rate limit info u `RateLimit-*` headerima
     legacyHeaders: false,       // Isključi `X-RateLimit-*` headere
     message: {
