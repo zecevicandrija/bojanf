@@ -50,6 +50,19 @@ const paymentLimiter = rateLimit({
     }
 });
 
+// Create-session rate limiter - sprečava double-click i Postman spam
+// Dozvoljava samo 1 zahtev na 10 sekundi po IP adresi
+const createSessionLimiter = rateLimit({
+    windowMs: 10 * 1000,        // 10 sekundi
+    max: 1,                      // max 1 zahtev po IP u tom periodu
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Zahtev već u obradi',
+        message: 'Sesija za plaćanje se već kreira. Sačekajte 10 sekundi.'
+    }
+});
+
 // AI Review rate limiter - ograničen jer koristi eksterni API
 const aiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,  // 1 minut
@@ -66,5 +79,6 @@ module.exports = {
     globalLimiter,
     authLimiter,
     paymentLimiter,
+    createSessionLimiter,
     aiLimiter
 };

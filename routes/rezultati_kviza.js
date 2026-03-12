@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { validate } = require('../middleware/validate');
+const { submitKvizSchema } = require('../validators/ostaleSchemas');
 
 // Route to save or update quiz results
-router.post('/submit', async (req, res) => {
+router.post('/submit', validate(submitKvizSchema), async (req, res) => {
     try {
         const { user_id, lesson_id, quiz_id, score, total_questions } = req.body;
-
-        if (!user_id || !lesson_id || !quiz_id || score === undefined || total_questions === undefined) {
-            return res.status(400).json({ error: 'Nedostaju potrebni podaci' });
-        }
         
         // Ovaj upit će ili uneti novi red, ili ažurirati postojeći ako korisnik ponovo polaže isti kviz.
         // NAPOMENA: Za ovo je potrebno da imaš UNIQUE ključ na kolonama (user_id, lesson_id, quiz_id) u bazi.

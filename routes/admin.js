@@ -2,20 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-
-// Middleware za admin autentifikaciju (dodajte prema vašoj logici)
-const requireAdmin = (req, res, next) => {
-    // TODO: Implementirajte admin proverу
-    // Možete koristiti JWT token ili jednostavan API key
-    const apiKey = req.headers['x-api-key'];
-    if (apiKey !== process.env.ADMIN_API_KEY) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    next();
-};
+const authMiddleware = require('../middleware/token');
+const requireAdmin = require('../middleware/requireAdmin');
 
 // Cron job za čišćenje isteklih pretplata
-router.post('/cleanup-expired-subscriptions', requireAdmin, async (req, res) => {
+router.post('/cleanup-expired-subscriptions', authMiddleware, requireAdmin, async (req, res) => {
     try {
         console.log('=== POKRETANJE CLEANUP EXPIRED SUBSCRIPTIONS ===');
         
@@ -33,20 +24,24 @@ router.post('/cleanup-expired-subscriptions', requireAdmin, async (req, res) => 
             
             console.log(`Pronađeno ${expiredUsers.length} isteklih pretplata`);
             
-            for (const user of expiredUsers) {
-                // Ukloni pristup kursu
+            if (expiredUsers.length > 0) {
+                // Izvuci sve ID-jeve u jednu matricu
+                const expiredIds = expiredUsers.map(u => u.id);
+                
+                // BULK operacija 1: Obriši sve kupovine odjednom
                 await connection.query(
-                    'DELETE FROM kupovina WHERE korisnik_id = ?',
-                    [user.id]
+                    'DELETE FROM kupovina WHERE korisnik_id IN (?)',
+                    [expiredIds]
                 );
                 
-                // Ažuriraj status
+                // BULK operacija 2: Ažuriraj sve statuse odjednom
                 await connection.query(
-                    'UPDATE korisnici SET subscription_status = ? WHERE id = ?',
-                    ['expired', user.id]
+                    'UPDATE korisnici SET subscription_status = ? WHERE id IN (?)',
+                    ['expired', expiredIds]
                 );
                 
-                console.log(`Uklonjen pristup za korisnika: ${user.email}`);
+                console.log(`Bulk operacija završena: ${expiredIds.length} korisnika obrađeno`);
+                expiredUsers.forEach(u => console.log(`  → ${u.email}`));
             }
             
             await connection.commit();
@@ -66,12 +61,12 @@ router.post('/cleanup-expired-subscriptions', requireAdmin, async (req, res) => 
         
     } catch (error) {
         console.error('Greška u cleanup:', error);
-        res.status(500).json({ error: 'Cleanup failed', details: error.message });
+        res.status(500).json({ error: 'Interna greška servera.' });
     }
 });
 
 // Dodatni endpoint za pregled subscription statistika
-router.get('/subscription-stats', requireAdmin, async (req, res) => {
+router.get('/subscription-stats', authMiddleware, requireAdmin, async (req, res) => {
     try {
         const [stats] = await db.query(`
             SELECT 

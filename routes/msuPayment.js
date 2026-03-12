@@ -11,22 +11,17 @@ const msuService = require('../utils/msuService');
 const generateRandomPassword = require('../utils/passwordGenerator');
 const { sendMsuWelcomeEmail, sendInvoiceEmail } = require('../utils/msuEmailHelper');
 const { createInvoice } = require('../utils/invoiceService');
-const { paymentLimiter } = require('../middleware/rateLimiter');
+const { createSessionLimiter } = require('../middleware/rateLimiter');
+const { validate } = require('../middleware/validate');
+const { createMsuSessionSchema } = require('../validators/ostaleSchemas');
 
 /**
  * POST /api/msu/create-session
  * Creates a new MSU payment session - supports both logged-in and guest users
  */
-router.post('/create-session', paymentLimiter, async (req, res) => {
+router.post('/create-session', createSessionLimiter, validate(createMsuSessionSchema), async (req, res) => {
     try {
         const { korisnikId, kursId: reqKursId, customerEmail, customerName, customerPhone, packageData } = req.body;
-
-        // Validacija - samo email i ime su obavezni za guest checkout
-        if (!customerEmail || !customerName) {
-            return res.status(400).json({
-                error: 'Missing required fields: customerEmail, customerName'
-            });
-        }
 
         let orderItems = [];
         let totalAmount = 0;
@@ -95,7 +90,7 @@ router.post('/create-session', paymentLimiter, async (req, res) => {
             merchantPaymentId,
             amount: totalAmount,
             orderItems,
-            returnUrl: 'https://test-api.zecevicdev.com/api/msu/callback-redirect'
+            returnUrl: 'http://localhost:5000/api/msu/callback-redirect'
         };
 
         // Koristi CIT session za automatic recurring payments
@@ -155,15 +150,49 @@ router.post('/create-session', paymentLimiter, async (req, res) => {
     } catch (error) {
         console.error('Error creating MSU session:', error);
         res.status(500).json({
-            error: 'Greška pri kreiranju sesije plaćanja',
-            details: error.message
+            error: 'Greška pri kreiranju sesije plaćanja'
         });
     }
 });
+/**
+ * Helper: Odredi koliko meseci pretplata traje na osnovu packageData
+ */
+function getSubscriptionMonths(packageData) {
+    if (!packageData?.id) return 1;
+    if (packageData.id.includes('3M')) return 3;
+    return 1; // Default 1 mesec (uključuje 1M i sve ostalo)
+}
+
+/**
+ * Helper: Parsuj traceID iz bankResponseExtras (može biti URL-encoded string ili objekat)
+ */
+function parseTraceID(bankResponseExtras) {
+    if (!bankResponseExtras) return null;
+
+    let bankExtras;
+    if (typeof bankResponseExtras === 'string') {
+        try {
+            const decoded = decodeURIComponent(bankResponseExtras);
+            bankExtras = JSON.parse(decoded);
+        } catch (err) {
+            console.warn('Failed to parse bankResponseExtras:', err);
+            return null;
+        }
+    } else {
+        bankExtras = bankResponseExtras;
+    }
+
+    return bankExtras.TRACEID || null;
+}
 
 /**
  * GET + POST /api/msu/callback-redirect
  * Receives callback from MSU (supports both GET and POST), processes payment, and redirects to frontend
+ * 
+ * ⚠️ TRANSACTION SAFETY: Sve kritične DB operacije (status update, kreiranje korisnika,
+ * aktivacija pretplate, kupovina, recurring) su obmotane u jednu MySQL transakciju.
+ * Ako bilo koja operacija fajluje → ROLLBACK svih promena → sprečava "ghost" naplate.
+ * Email i fiskalizacija ostaju VAN transakcije jer su spoljni servisi.
  */
 router.all('/callback-redirect', async (req, res) => {
     try {
@@ -222,7 +251,7 @@ router.all('/callback-redirect', async (req, res) => {
             // Continue processing with found transaction
         }
 
-        // Pronađi transakciju u bazi
+        // Pronađi transakciju u bazi (read-only, pre transakcije)
         const [transactions] = await db.query(
             'SELECT * FROM msu_transakcije WHERE merchant_payment_id = ?',
             [merchantPaymentId]
@@ -232,7 +261,6 @@ router.all('/callback-redirect', async (req, res) => {
             console.error('❌ Transaction not found:', merchantPaymentId);
             console.error('Attempting to query database for similar transactions...');
 
-            // Pokušaj pronaći bilo koju nedavnu pending transakciju
             const [recentTxns] = await db.query(
                 `SELECT * FROM msu_transakcije 
                 WHERE status = 'PENDING' 
@@ -257,10 +285,15 @@ router.all('/callback-redirect', async (req, res) => {
             korisnikId: transaction.korisnik_id
         });
 
+        // ✅ IDEMPOTENCY GUARD: Ako je transakcija već obrađena, preskoči sve
+        if (transaction.status === 'APPROVED') {
+            console.log('⚠️ Transaction already APPROVED, skipping duplicate processing. merchantPaymentId:', merchantPaymentId);
+            return res.redirect(`https://localhost:3000/profil?payment=success`);
+        }
+
         const status = responseCode === '00' ? 'APPROVED' : 'FAILED';
 
         // ⚠️ VAŽNO: Merge existing raw_response with new responseData
-        // Ne smeš da prepišeš raw_response jer ćeš izgubiti customerEmail, customerName, packageData!
         let existingRawData = {};
         if (transaction.raw_response) {
             if (typeof transaction.raw_response === 'string') {
@@ -275,10 +308,8 @@ router.all('/callback-redirect', async (req, res) => {
         }
 
         // ⚠️ KRITIČNO: Merge OBRNUTO - callback podaci prvo, pa originals preko njih!
-        // Ovo osigurava da customerEmail, customerName, packageData NIKAD ne budu overwrite-ovani
         const mergedRawData = {
-            ...responseData,      // Callback podaci (pgTranId, cardToken, bankResponseExtras...)
-            // Originals overwrite-uju sve što je možda prazno u callback-u
+            ...responseData,
             customerEmail: existingRawData.customerEmail || responseData.customerEmail,
             customerName: existingRawData.customerName || responseData.customerName,
             itemType: existingRawData.itemType,
@@ -294,164 +325,100 @@ router.all('/callback-redirect', async (req, res) => {
             hasBankResponseExtras: !!mergedRawData.bankResponseExtras
         });
 
-        // Ažuriraj transakciju
-        await db.query(
-            `UPDATE msu_transakcije 
-            SET pg_tran_id = ?, pg_order_id = ?, pg_tran_appr_code = ?, 
-                status = ?, response_code = ?, response_msg = ?, 
-                raw_response = ?, updated_at = NOW()
-            WHERE merchant_payment_id = ?`,
-            [
-                responseData.pgTranId || null,
-                responseData.pgOrderId || null,
-                responseData.pgTranApprCode || null,
-                status,
-                responseCode,
-                responseMsg,
-                JSON.stringify(mergedRawData),  // ✅ Merge-ovani podaci
-                merchantPaymentId
-            ]
-        );
+        // ═══════════════════════════════════════════════════════════════
+        // PRE-TRANSACTION: Pripremi CPU-intensive operacije van transakcije
+        // da se smanji vreme zaključavanja konekcije
+        // ═══════════════════════════════════════════════════════════════
+        let guestPassword = null;
+        let guestHashedPassword = null;
+        const customerEmail = mergedRawData.customerEmail;
+        const customerName = mergedRawData.customerName || 'Korisnik';
 
-        // Ako je plaćanje uspešno
-        if (status === 'APPROVED') {
-            let userId = transaction.korisnik_id;
+        if (status === 'APPROVED' && !transaction.korisnik_id && customerEmail) {
+            // Pre-hash password za potencijalno kreiranje guest korisnika (bcrypt je CPU-heavy)
+            guestPassword = generateRandomPassword();
+            guestHashedPassword = await bcrypt.hash(guestPassword, 10);
+        }
 
-            // Ako je guest checkout (korisnik_id je NULL)
-            if (!userId) {
-                try {
-                    // ✅ Koristi mergedRawData koji je upravo kreiran i ima sve podatke
-                    const customerEmail = mergedRawData.customerEmail;
-                    const customerName = mergedRawData.customerName || 'Korisnik';
+        // ═══════════════════════════════════════════════════════════════
+        // START TRANSACTION: Sve kritične DB operacije unutar jedne transakcije
+        // ═══════════════════════════════════════════════════════════════
+        const connection = await db.getConnection();
+        let userId = transaction.korisnik_id;
+        let isNewUser = false;
 
-                    console.log('🔍 Processing guest checkout for:', customerEmail);
+        try {
+            await connection.beginTransaction();
+            console.log('🔒 Transaction started for merchantPaymentId:', merchantPaymentId);
 
-                    if (customerEmail) {
-                        // Proveri da li user već postoji
-                        const [existing] = await db.query(
-                            'SELECT id FROM korisnici WHERE email = ?',
-                            [customerEmail]
+            // KORAK 1: Ažuriraj status transakcije
+            await connection.query(
+                `UPDATE msu_transakcije 
+                SET pg_tran_id = ?, pg_order_id = ?, pg_tran_appr_code = ?, 
+                    status = ?, response_code = ?, response_msg = ?, 
+                    raw_response = ?, updated_at = NOW()
+                WHERE merchant_payment_id = ?`,
+                [
+                    responseData.pgTranId || null,
+                    responseData.pgOrderId || null,
+                    responseData.pgTranApprCode || null,
+                    status,
+                    responseCode,
+                    responseMsg,
+                    JSON.stringify(mergedRawData),
+                    merchantPaymentId
+                ]
+            );
+
+            if (status === 'APPROVED') {
+                const subscriptionMonths = getSubscriptionMonths(mergedRawData.packageData);
+                const now = new Date();
+                const expiryDate = new Date(now);
+                expiryDate.setMonth(expiryDate.getMonth() + subscriptionMonths);
+
+                // KORAK 2: Guest user — pronađi ili kreiraj korisnika
+                if (!userId && customerEmail) {
+                    const [existing] = await connection.query(
+                        'SELECT id FROM korisnici WHERE email = ?',
+                        [customerEmail]
+                    );
+
+                    if (existing.length > 0) {
+                        userId = existing[0].id;
+                        console.log(`✅ Existing user found: ID=${userId}`);
+                    } else {
+                        // Kreiraj novog korisnika (password je već hash-ovan pre transakcije)
+                        const [ime, ...prezimeParts] = customerName.split(/\s+/);
+                        const prezime = prezimeParts.join(' ') || ime;
+
+                        const [insertRes] = await connection.query(
+                            `INSERT INTO korisnici (ime, prezime, email, sifra, uloga, subscription_expires_at, subscription_status) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                            [ime, prezime, customerEmail, guestHashedPassword, 'korisnik', expiryDate, 'active']
                         );
 
-                        if (existing.length > 0) {
-                            userId = existing[0].id;
-                            console.log(`✅ Existing user found: ID=${userId}`);
+                        userId = insertRes.insertId;
+                        isNewUser = true;
 
-                            // Ažuriraj subscription za postojećeg korisnika
-                            const now = new Date();
-                            let subscriptionMonths = 1;
-
-                            if (mergedRawData.packageData && mergedRawData.packageData.id) {
-                                if (mergedRawData.packageData.id.includes('3M')) {
-                                    subscriptionMonths = 3;
-                                } else if (mergedRawData.packageData.id.includes('1M')) {
-                                    subscriptionMonths = 1;
-                                }
-                            }
-
-                            const expiryDate = new Date(now);
-                            expiryDate.setMonth(expiryDate.getMonth() + subscriptionMonths);
-
-                            await db.query(
-                                'UPDATE korisnici SET subscription_expires_at = ?, subscription_status = ? WHERE id = ?',
-                                [expiryDate, 'active', userId]
-                            );
-
-                            console.log(`✅ Subscription extended to: ${expiryDate.toISOString()}`);
-                        } else {
-                            // Kreiraj novog korisnika
-                            const password = generateRandomPassword();
-                            const hashedPassword = await bcrypt.hash(password, 10);
-                            const [ime, ...prezimeParts] = customerName.split(/\s+/);
-                            const prezime = prezimeParts.join(' ') || ime;
-
-                            // Izračunaj datum isteka pretplate
-                            const now = new Date();
-                            let subscriptionMonths = 1; // Default 1 mesec
-
-                            // Provjeri package podatke da odrediš trajanje
-                            if (mergedRawData.packageData && mergedRawData.packageData.id) {
-                                // STANDARD_1M = 1 mesec, PRO_3M = 3 meseca
-                                if (mergedRawData.packageData.id.includes('3M')) {
-                                    subscriptionMonths = 3;
-                                } else if (mergedRawData.packageData.id.includes('1M')) {
-                                    subscriptionMonths = 1;
-                                }
-                            }
-
-                            const expiryDate = new Date(now);
-                            expiryDate.setMonth(expiryDate.getMonth() + subscriptionMonths);
-
-                            const [insertRes] = await db.query(
-                                `INSERT INTO korisnici (ime, prezime, email, sifra, uloga, subscription_expires_at, subscription_status) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                                [ime, prezime, customerEmail, hashedPassword, 'korisnik', expiryDate, 'active']
-                            );
-
-                            userId = insertRes.insertId;
-
-                            // VAŽNO: Ispis passworda i subscription info u konzolu
-                            console.log('========================================');
-                            console.log('✅ NEW USER CREATED:');
-                            console.log(`   ID: ${userId}`);
-                            console.log(`   Email: ${customerEmail}`);
-                            console.log(`   Subscription Expires: ${expiryDate.toISOString()}`);
-                            console.log(`   Duration: ${subscriptionMonths} month(s)`);
-                            console.log('========================================');
-
-                            // Pošalji welcome email sa šifrom
-                            try {
-                                console.log('📧 Attempting to send welcome email...');
-                                console.log(`   To: ${customerEmail}`);
-                                console.log(`   Name: ${ime}`);
-                                console.log(`   Has RESEND_API_KEY: ${!!process.env.RESEND_API_KEY}`);
-
-                                const emailResult = await sendMsuWelcomeEmail(customerEmail, password, ime);
-
-                                if (emailResult) {
-                                    console.log(`✅ Welcome email sent successfully to ${customerEmail}`);
-                                } else {
-                                    console.warn(`⚠️ Email function returned false for ${customerEmail}`);
-                                }
-                            } catch (emailErr) {
-                                console.error('❌ Failed to send welcome email:');
-                                console.error('   Error:', emailErr.message);
-                                console.error('   Stack:', emailErr.stack);
-                            }
-                        }
-
-                        // Ažuriraj transakciju sa korisnikId
-                        await db.query(
-                            'UPDATE msu_transakcije SET korisnik_id = ? WHERE merchant_payment_id = ?',
-                            [userId, merchantPaymentId]
-                        );
+                        console.log('========================================');
+                        console.log('✅ NEW USER CREATED:');
+                        console.log(`   ID: ${userId}`);
+                        console.log(`   Email: ${customerEmail}`);
+                        console.log(`   Subscription Expires: ${expiryDate.toISOString()}`);
+                        console.log(`   Duration: ${subscriptionMonths} month(s)`);
+                        console.log('========================================');
                     }
-                } catch (userCreationErr) {
-                    console.error('❌ Error creating user from guest checkout:', userCreationErr);
+
+                    // KORAK 3: Poveži korisnika sa transakcijom
+                    await connection.query(
+                        'UPDATE msu_transakcije SET korisnik_id = ? WHERE merchant_payment_id = ?',
+                        [userId, merchantPaymentId]
+                    );
                 }
-            }
 
-            // ✅ VAŽNO: Ažuriraj subscription za SVE korisnike (nove i postojeće)
-            if (userId && transaction.kurs_id) {
-                try {
-                    // Odredi trajanje subscription-a iz mergedRawData
-                    let subscriptionMonths = 1; // Default 1 mesec
-
-                    if (mergedRawData.packageData && mergedRawData.packageData.id) {
-                        if (mergedRawData.packageData.id.includes('3M')) {
-                            subscriptionMonths = 3;
-                        } else if (mergedRawData.packageData.id.includes('1M')) {
-                            subscriptionMonths = 1;
-                        }
-                    }
-
-                    // Izračunaj novi datum isteka
-                    const now = new Date();
-                    const expiryDate = new Date(now);
-                    expiryDate.setMonth(expiryDate.getMonth() + subscriptionMonths);
-
-                    // Ažuriraj subscription za korisnika
-                    await db.query(
+                // KORAK 4: Ažuriraj subscription za SVE korisnike (nove i postojeće)
+                if (userId && transaction.kurs_id) {
+                    await connection.query(
                         'UPDATE korisnici SET subscription_expires_at = ?, subscription_status = ? WHERE id = ?',
                         [expiryDate, 'active', userId]
                     );
@@ -462,151 +429,41 @@ router.all('/callback-redirect', async (req, res) => {
                     console.log(`   New Expiry: ${expiryDate.toISOString()}`);
                     console.log(`   Duration: ${subscriptionMonths} month(s)`);
                     console.log('========================================');
-
-                } catch (subscriptionErr) {
-                    console.error('❌ Error extending subscription:', subscriptionErr);
-                }
-            }
-
-            // Dodaj kurs u kupovine ako postoji korisnik i kurs
-            if (userId && transaction.kurs_id) {
-                try {
-                    await db.query(
-                        'INSERT INTO kupovina (korisnik_id, kurs_id, popust_id) VALUES (?, ?, ?)',
-                        [userId, transaction.kurs_id, null]
-                    );
-                    console.log(`✅ Course added to purchases: user_id=${userId}, kurs_id=${transaction.kurs_id}`);
-                } catch (purchaseErr) {
-                    if (purchaseErr.code !== 'ER_DUP_ENTRY') {
-                        console.warn('Failed to add purchase:', purchaseErr.message);
-                    }
-                }
-            }
-
-
-            // ✅ FISKALIZACIJA: Kreiraj račun i pošalji mejl
-            try {
-                // Dohvati podatke za račun
-                let invoiceItemName = 'Motion Akademija - Pretplata';
-                let invoiceAmount = parseFloat(transaction.amount);
-
-                // Pokušaj dobiti ime kursa/paketa
-                if (mergedRawData.packageData && mergedRawData.packageData.name) {
-                    invoiceItemName = mergedRawData.packageData.name;
-                } else if (transaction.kurs_id) {
-                    const [kursData] = await db.query(
-                        'SELECT naziv FROM kursevi WHERE id = ?',
-                        [transaction.kurs_id]
-                    );
-                    if (kursData.length > 0) {
-                        invoiceItemName = kursData[0].naziv;
-                    }
                 }
 
-                console.log('📄 Creating fiscal invoice...');
-                const invoiceResult = await createInvoice({
-                    itemName: invoiceItemName,
-                    price: invoiceAmount,
-                    quantity: 1,
-                    paymentType: 2 // Plaćanje karticom
-                });
-
-                if (invoiceResult && invoiceResult.invoice_pdf) {
-                    // Dohvati email i ime korisnika za slanje
-                    let invoiceEmail = mergedRawData.customerEmail;
-                    let invoiceName = mergedRawData.customerName || 'Korisnik';
-
-                    if (!invoiceEmail && userId) {
-                        const [userData] = await db.query(
-                            'SELECT email, ime FROM korisnici WHERE id = ?',
-                            [userId]
+                // KORAK 5: Zapiši kupovinu
+                if (userId && transaction.kurs_id) {
+                    try {
+                        await connection.query(
+                            'INSERT INTO kupovina (korisnik_id, kurs_id, popust_id) VALUES (?, ?, ?)',
+                            [userId, transaction.kurs_id, null]
                         );
-                        if (userData.length > 0) {
-                            invoiceEmail = userData[0].email;
-                            invoiceName = userData[0].ime || invoiceName;
+                        console.log(`✅ Course added to purchases: user_id=${userId}, kurs_id=${transaction.kurs_id}`);
+                    } catch (purchaseErr) {
+                        if (purchaseErr.code !== 'ER_DUP_ENTRY') {
+                            throw purchaseErr; // Ponovo baci grešku da triggeruje ROLLBACK
                         }
-                    }
-
-                    if (invoiceEmail) {
-                        await sendInvoiceEmail(
-                            invoiceEmail,
-                            invoiceName.split(/\s+/)[0], // Samo prvo ime
-                            invoiceResult.invoice_pdf,
-                            invoiceAmount
-                        );
-                        console.log(`✅ Invoice email sent to ${invoiceEmail}`);
+                        // ER_DUP_ENTRY je OK — korisnik je već kupio kurs (idempotentna operacija)
+                        console.log(`ℹ️ Purchase already exists for user_id=${userId}, kurs_id=${transaction.kurs_id}`);
                     }
                 }
-            } catch (invoiceErr) {
-                console.error('⚠️ Invoice creation/email failed (non-blocking):', invoiceErr.message);
-            }
 
-
-            // ✅ NOVO: Kreiraj recurring subscription entry za automatsko produžavanje
-            console.log('\n🔍 DEBUG: Checking for recurring subscription creation...');
-            console.log(`   userId: ${userId}`);
-            console.log(`   responseData.cardToken: ${responseData.cardToken ? 'EXISTS' : 'MISSING'}`);
-            console.log(`   responseData keys: ${Object.keys(responseData).join(', ')}`);
-
-            if (userId && responseData.cardToken) {
-                console.log('✅ Both userId and cardToken present - proceeding...');
-                try {
-                    // Izvuci traceID iz bankResponseExtras
-                    let traceID = null;
-                    console.log(`   bankResponseExtras type: ${typeof responseData.bankResponseExtras}`);
-                    console.log(`   bankResponseExtras value: ${JSON.stringify(responseData.bankResponseExtras)}`);
-
-                    if (responseData.bankResponseExtras) {
-                        let bankExtras;
-                        if (typeof responseData.bankResponseExtras === 'string') {
-                            try {
-                                // VAŽNO: Prvo dekoduj URL-encoded string, pa onda parsuj JSON
-                                const decodedExtras = decodeURIComponent(responseData.bankResponseExtras);
-                                console.log(`   Decoded bankResponseExtras: ${decodedExtras}`);
-                                bankExtras = JSON.parse(decodedExtras);
-                            } catch (parseErr) {
-                                console.warn('Failed to parse bankResponseExtras:', parseErr);
-                                bankExtras = {};
-                            }
-                        } else {
-                            bankExtras = responseData.bankResponseExtras;
-                        }
-
-                        console.log(`   Parsed bankExtras: ${JSON.stringify(bankExtras)}`);
-                        traceID = bankExtras.TRACEID || null;
-                        console.log(`   Extracted traceID: ${traceID}`);
-                    }
+                // KORAK 6: Kreiraj recurring subscription (ako postoji cardToken i traceID)
+                if (userId && responseData.cardToken) {
+                    const traceID = parseTraceID(responseData.bankResponseExtras);
+                    console.log(`🔍 Recurring check — traceID: ${traceID || 'NOT FOUND'}, cardToken: EXISTS`);
 
                     if (traceID) {
-                        console.log('✅ TraceID found - creating recurring subscription...');
-
-                        // Koristi mergedRawData za subscription podatke
-                        let subscriptionMonths = 1;
-                        if (mergedRawData.packageData && mergedRawData.packageData.id) {
-                            if (mergedRawData.packageData.id.includes('3M')) {
-                                subscriptionMonths = 3;
-                            } else if (mergedRawData.packageData.id.includes('1M')) {
-                                subscriptionMonths = 1;
-                            }
-                        }
-
-                        // Izračunaj next billing date - treba da bude kada pretplata istekne
-                        // (korisnik je upravo platio za subscriptionMonths, sledeća naplata je nakon tog perioda)
-                        const now = new Date();
                         const nextBillingDate = new Date(now);
                         nextBillingDate.setMonth(nextBillingDate.getMonth() + subscriptionMonths);
-                        // NAPOMENA: ovo JE ispravno za INICIJALNU kupovinu jer je nextBillingDate = subscription_expires_at
-                        // tj. korisnik plati danas, pretplata mu traje mesec dana, sledeća naplata je za mesec dana
 
-                        // Proveri da li već postoji recurring subscription za ovog korisnika
-                        const [existingRecurring] = await db.query(
+                        const [existingRecurring] = await connection.query(
                             'SELECT id FROM recurring_subscriptions WHERE korisnik_id = ? AND is_active = 1',
                             [userId]
                         );
 
                         if (existingRecurring.length === 0) {
-                            // Kreiraj recurring subscription
-                            await db.query(
+                            await connection.query(
                                 `INSERT INTO recurring_subscriptions 
                                 (korisnik_id, kurs_id, card_token, trace_id, msu_customer_id, amount, currency, 
                                 frequency, occurrence, subscription_months, is_active, next_billing_date, last_billing_date) 
@@ -616,7 +473,7 @@ router.all('/callback-redirect', async (req, res) => {
                                     transaction.kurs_id,
                                     responseData.cardToken,
                                     traceID,
-                                    responseData.customerId || userId.toString(), // CUSTOMER koji je kori\u0161\u0107en u CIT-u
+                                    responseData.customerId || userId.toString(),
                                     transaction.amount,
                                     transaction.currency || 'RSD',
                                     1, // frequency
@@ -639,22 +496,119 @@ router.all('/callback-redirect', async (req, res) => {
                         }
                     } else {
                         console.warn('⚠️ TraceID not found in response - skipping recurring subscription creation');
-                        console.warn('   This means bankResponseExtras did not contain TRACEID field');
                     }
-                } catch (recurringErr) {
-                    console.error('❌ Error creating recurring subscription:', recurringErr);
+                } else if (status === 'APPROVED') {
+                    console.warn('⚠️ Skipping recurring subscription creation:');
+                    if (!userId) console.warn('   - userId is missing');
+                    if (!responseData.cardToken) console.warn('   - cardToken is missing from response');
                 }
-            } else {
-                console.warn('⚠️ Skipping recurring subscription creation:');
-                if (!userId) console.warn('   - userId is missing');
-                if (!responseData.cardToken) console.warn('   - cardToken is missing from response');
             }
 
+            // ═══════════════════════════════════════════════════════════════
+            // COMMIT: Sve DB operacije su uspele — sačuvaj promene
+            // ═══════════════════════════════════════════════════════════════
+            await connection.commit();
+            console.log('✅ Transaction COMMITTED successfully for merchantPaymentId:', merchantPaymentId);
 
-            // Redirect na profil stranicu
+        } catch (txError) {
+            // ═══════════════════════════════════════════════════════════════
+            // ROLLBACK: Nešto nije uspelo — vrati sve DB promene
+            // ═══════════════════════════════════════════════════════════════
+            await connection.rollback();
+            console.error('❌ Transaction ROLLED BACK for merchantPaymentId:', merchantPaymentId);
+            console.error('   Error:', txError.message);
+            console.error('   Stack:', txError.stack);
+            return res.redirect(`https://localhost:3000/placanje/rezultat?error=server_error`);
+        } finally {
+            connection.release();
+            console.log('🔓 DB connection released for merchantPaymentId:', merchantPaymentId);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // POST-TRANSACTION: Fire-and-forget operacije (spoljni servisi)
+        // Ove operacije NE MOGU da se rollback-uju, ali transaction je 
+        // već COMMIT-ovan tako da su DB podaci sigurni.
+        // ═══════════════════════════════════════════════════════════════
+        if (status === 'APPROVED') {
+            // Welcome email za nove guest korisnike
+            if (isNewUser && guestPassword && customerEmail) {
+                try {
+                    const [ime] = customerName.split(/\s+/);
+                    console.log('📧 Attempting to send welcome email...');
+                    console.log(`   To: ${customerEmail}`);
+                    console.log(`   Name: ${ime}`);
+                    console.log(`   Has RESEND_API_KEY: ${!!process.env.RESEND_API_KEY}`);
+
+                    const emailResult = await sendMsuWelcomeEmail(customerEmail, guestPassword, ime);
+
+                    if (emailResult) {
+                        console.log(`✅ Welcome email sent successfully to ${customerEmail}`);
+                    } else {
+                        console.warn(`⚠️ Email function returned false for ${customerEmail}`);
+                    }
+                } catch (emailErr) {
+                    console.error('❌ Failed to send welcome email:');
+                    console.error('   Error:', emailErr.message);
+                    console.error('   Stack:', emailErr.stack);
+                }
+            }
+
+            // Fiskalizacija: Kreiraj račun i pošalji mejl
+            try {
+                let invoiceItemName = 'Motion Akademija - Pretplata';
+                let invoiceAmount = parseFloat(transaction.amount);
+
+                if (mergedRawData.packageData && mergedRawData.packageData.name) {
+                    invoiceItemName = mergedRawData.packageData.name;
+                } else if (transaction.kurs_id) {
+                    const [kursData] = await db.query(
+                        'SELECT naziv FROM kursevi WHERE id = ?',
+                        [transaction.kurs_id]
+                    );
+                    if (kursData.length > 0) {
+                        invoiceItemName = kursData[0].naziv;
+                    }
+                }
+
+                console.log('📄 Creating fiscal invoice...');
+                const invoiceResult = await createInvoice({
+                    itemName: invoiceItemName,
+                    price: invoiceAmount,
+                    quantity: 1,
+                    paymentType: 2
+                });
+
+                if (invoiceResult && invoiceResult.invoice_pdf) {
+                    let invoiceEmail = mergedRawData.customerEmail;
+                    let invoiceName = mergedRawData.customerName || 'Korisnik';
+
+                    if (!invoiceEmail && userId) {
+                        const [userData] = await db.query(
+                            'SELECT email, ime FROM korisnici WHERE id = ?',
+                            [userId]
+                        );
+                        if (userData.length > 0) {
+                            invoiceEmail = userData[0].email;
+                            invoiceName = userData[0].ime || invoiceName;
+                        }
+                    }
+
+                    if (invoiceEmail) {
+                        await sendInvoiceEmail(
+                            invoiceEmail,
+                            invoiceName.split(/\s+/)[0],
+                            invoiceResult.invoice_pdf,
+                            invoiceAmount
+                        );
+                        console.log(`✅ Invoice email sent to ${invoiceEmail}`);
+                    }
+                }
+            } catch (invoiceErr) {
+                console.error('⚠️ Invoice creation/email failed (non-blocking):', invoiceErr.message);
+            }
+
             return res.redirect(`https://localhost:3000/profil?payment=success`);
         } else {
-            // Plaćanje nije uspelo
             return res.redirect(`https://localhost:3000/placanje/rezultat?merchantPaymentId=${merchantPaymentId}&status=failed&message=${encodeURIComponent(responseMsg)}`);
         }
 

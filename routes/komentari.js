@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Database connection
+const { validate } = require('../middleware/validate');
+const { createKomentarSchema } = require('../validators/ostaleSchemas');
 
 // Endpoint to fetch all comments for a course
 router.get('/kurs/:kursId', async (req, res) => {
@@ -22,13 +24,9 @@ router.get('/kurs/:kursId', async (req, res) => {
 });
 
 // Endpoint to add a new comment
-router.post('/', async (req, res) => {
+router.post('/', validate(createKomentarSchema), async (req, res) => {
     try {
         const { korisnik_id, kurs_id, komentar, rating } = req.body;
-
-        if (!komentar || !korisnik_id || !kurs_id) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
 
         const query = 'INSERT INTO komentari (kurs_id, korisnik_id, komentar, rating) VALUES (?, ?, ?, ?)';
         const [result] = await db.query(query, [kurs_id, korisnik_id, komentar, rating]);

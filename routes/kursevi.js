@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const db = require('../db');
-const uploadToBunny = require('../utils/bunnyHelper');
+const authMiddleware = require('../middleware/token');
+const requireAdmin = require('../middleware/requireAdmin');
 const { cacheMiddleware, invalidateCache } = require('../middleware/cacheMiddleware');
-
-// Multer ostaje isti
-const upload = multer({ storage: multer.memoryStorage() });
+const { validate } = require('../middleware/validate');
+const { createKursSchema, updateKursSchema } = require('../validators/kurseviSchemas');
 
 // GET Svi kursevi (keširano 5 minuta)
 router.get('/', cacheMiddleware(300), async (req, res) => {
@@ -51,33 +50,27 @@ router.get('/instruktor/:id', async (req, res) => {
     }
 });
 
-// --- POST Novi kurs sa slikom ---
-router.post('/', upload.single('slika'), async (req, res) => {
+// --- POST Novi kurs (slika kao URL string) ---
+router.post('/', authMiddleware, requireAdmin, validate(createKursSchema), async (req, res) => {
     const connection = await db.getConnection();
     try {
-        const { naziv, opis, instruktor_id, cena, is_subscription, payhip_product_id } = req.body;
-        const sekcije = req.body.sekcije ? JSON.parse(req.body.sekcije) : [];
-
-        if (!naziv || !opis || !instruktor_id || cena === undefined || !req.file) {
-            return res.status(400).json({ error: 'Nedostaju obavezna polja ili slika.' });
-        }
+        const { naziv, opis, instruktor_id, cena, slika, is_subscription, payhip_product_id, sekcije } = req.body;
+        const parsedSekcije = typeof sekcije === 'string' ? JSON.parse(sekcije) : (sekcije || []);
 
         await connection.beginTransaction();
-        const uniqueFileName = `slika-kursa-${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
-        const slikaUrl = await uploadToBunny(req.file.buffer, uniqueFileName);
 
         const kursQuery = 'INSERT INTO kursevi (naziv, opis, instruktor_id, cena, slika, is_subscription, payhip_product_id) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        const [kursResult] = await connection.query(kursQuery, [naziv, opis, instruktor_id, cena, slikaUrl, is_subscription || 0, payhip_product_id]);
+        const [kursResult] = await connection.query(kursQuery, [naziv, opis, instruktor_id, cena, slika, is_subscription || 0, payhip_product_id]);
         const noviKursId = kursResult.insertId;
 
-        if (Array.isArray(sekcije) && sekcije.length > 0) {
+        if (Array.isArray(parsedSekcije) && parsedSekcije.length > 0) {
             const sekcijeQuery = 'INSERT INTO sekcije (kurs_id, naziv, redosled) VALUES ?';
-            const sekcijeData = sekcije.map((naziv, index) => [noviKursId, naziv, index + 1]);
+            const sekcijeData = parsedSekcije.map((naziv, index) => [noviKursId, naziv, index + 1]);
             await connection.query(sekcijeQuery, [sekcijeData]);
         }
 
         await connection.commit();
-        invalidateCache('/api/kursevi'); // Obriši keš nakon dodavanja
+        invalidateCache('/api/kursevi');
         res.status(201).json({ message: 'Kurs i sekcije su uspešno dodati', courseId: noviKursId });
     } catch (error) {
         await connection.rollback();
@@ -88,11 +81,11 @@ router.post('/', upload.single('slika'), async (req, res) => {
     }
 });
 
-// --- PUT Ažuriranje kursa sa (opciono) novom slikom ---
-router.put('/:id', upload.single('slika'), async (req, res) => {
+// --- PUT Ažuriranje kursa (slika kao URL string) ---
+router.put('/:id', authMiddleware, requireAdmin, validate(updateKursSchema), async (req, res) => {
     try {
         const courseId = req.params.id;
-        const { naziv, opis, cena, instruktor_id, is_subscription, payhip_product_id } = req.body;
+        const { naziv, opis, cena, instruktor_id, slika, is_subscription, payhip_product_id } = req.body;
 
         const fieldsToUpdate = {};
         if (naziv) fieldsToUpdate.naziv = naziv;
@@ -101,11 +94,7 @@ router.put('/:id', upload.single('slika'), async (req, res) => {
         if (instruktor_id) fieldsToUpdate.instruktor_id = instruktor_id;
         if (is_subscription !== undefined) fieldsToUpdate.is_subscription = is_subscription;
         if (payhip_product_id) fieldsToUpdate.payhip_product_id = payhip_product_id;
-
-        if (req.file) {
-            const uniqueFileName = `slika-kursa-${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
-            fieldsToUpdate.slika = await uploadToBunny(req.file.buffer, uniqueFileName);
-        }
+        if (slika) fieldsToUpdate.slika = slika;
 
         if (Object.keys(fieldsToUpdate).length === 0) {
             return res.status(400).json({ error: 'Nema polja za ažuriranje' });
@@ -119,7 +108,7 @@ router.put('/:id', upload.single('slika'), async (req, res) => {
         }
 
         res.status(200).json({ message: 'Kurs uspešno ažuriran' });
-        invalidateCache('/api/kursevi'); // Obriši keš nakon ažuriranja
+        invalidateCache('/api/kursevi');
     } catch (error) {
         console.error('Greška prilikom ažuriranja kursa:', error);
         res.status(500).json({ error: 'Došlo je do greške na serveru.' });
@@ -127,7 +116,7 @@ router.put('/:id', upload.single('slika'), async (req, res) => {
 });
 
 // --- DELETE Brisanje kursa ---
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, requireAdmin, async (req, res) => {
     try {
         const courseId = req.params.id;
         const query = 'DELETE FROM kursevi WHERE id = ?';

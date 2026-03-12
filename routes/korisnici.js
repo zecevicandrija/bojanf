@@ -3,14 +3,9 @@ const router = express.Router();
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middleware/token');
-
-// Middleware: Samo admin može pristupiti
-const requireAdmin = (req, res, next) => {
-    if (req.user.uloga !== 'admin') {
-        return res.status(403).json({ error: 'Samo admin ima pristup ovoj ruti.' });
-    }
-    next();
-};
+const requireAdmin = require('../middleware/requireAdmin');
+const { validate } = require('../middleware/validate');
+const { createKorisnikSchema, updateKorisnikSchema } = require('../validators/korisniciSchemas');
 
 // Endpoint za dobavljanje svih korisnika (SAMO ADMIN)
 router.get('/', authMiddleware, requireAdmin, async (req, res) => {
@@ -26,13 +21,10 @@ router.get('/', authMiddleware, requireAdmin, async (req, res) => {
 });
 
 // Endpoint za dodavanje novog korisnika (SAMO ADMIN)
-router.post('/', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/', authMiddleware, requireAdmin, validate(createKorisnikSchema), async (req, res) => {
     const { ime, prezime, email, sifra, uloga, subscription_expires_at, subscription_status } = req.body;
 
     try {
-        if (!ime || !prezime || !email || !sifra || !uloga) {
-            return res.status(400).json({ error: 'Nedostaju obavezna polja' });
-        }
 
         const hashedPassword = await bcrypt.hash(sifra, 10);
         
@@ -54,10 +46,16 @@ router.post('/', authMiddleware, requireAdmin, async (req, res) => {
     }
 });
 
-// Endpoint za ažuriranje korisnika (SAMO ADMIN)
-router.put('/:id', authMiddleware, requireAdmin, async (req, res) => {
+// Endpoint za ažuriranje korisnika (ADMIN ili vlasnik profila)
+router.put('/:id', authMiddleware, validate(updateKorisnikSchema), async (req, res) => {
     try {
         const userId = req.params.id;
+
+        // Proveravamo da li je korisnik admin ili ažurira svoj profil
+        if (req.user.uloga !== 'admin' && req.user.id !== parseInt(userId)) {
+            return res.status(403).json({ message: 'Nemate dozvolu za ovu akciju. Potrebna je admin uloga ili da ažurirate sopstveni profil.' });
+        }
+
         const { ime, prezime, email, sifra } = req.body;
 
         const fieldsToUpdate = {};
@@ -65,7 +63,14 @@ router.put('/:id', authMiddleware, requireAdmin, async (req, res) => {
         // Proveravamo svako polje i dodajemo ga u objekat za ažuriranje samo ako postoji
         if (ime) fieldsToUpdate.ime = ime;
         if (prezime) fieldsToUpdate.prezime = prezime;
-        if (email) fieldsToUpdate.email = email;
+        
+        // Email može da menja samo admin
+        if (email) {
+            if (req.user.uloga === 'admin') {
+                fieldsToUpdate.email = email;
+            }
+            // Ukoliko nije admin, pokušaj promene email-a se ignoriše
+        }
         
         // Lozinku hešujemo samo ako je poslata nova
         if (sifra) {

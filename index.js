@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const helmet = require('helmet');
 const db = require('./db');
@@ -11,7 +12,7 @@ const authRouter = require('./routes/auth');
 const korisniciRouter = require('./routes/korisnici');
 const kurseviRouter = require('./routes/kursevi');
 const lekcijeRouter = require('./routes/lekcije');
-const wishlistRouter = require('./routes/wishlist');
+
 const kupovinaRouter = require('./routes/kupovina');
 const ratingsRouter = require('./routes/ratings');
 const komentariRouter = require('./routes/komentari');
@@ -19,7 +20,6 @@ const kompletirane_lekcijeRouter = require('./routes/kompletirane_lekcije');
 const popustiRouter = require('./routes/popusti');
 const rezultatiKvizaRouter = require('./routes/rezultati_kviza');
 const sekcijeRouter = require('./routes/sekcije');
-// Paddle removed - using MSU/Chipcard payments
 const adminRouter = require('./routes/admin');
 const msuPaymentRouter = require('./routes/msuPayment');
 const subscriptionStatusRouter = require('./routes/subscriptionStatus');
@@ -36,11 +36,11 @@ app.set('trust proxy', 1);
 
 // 1. CORS se primenjuje na sve zahteve, pa ide prvi
 const allowedOrigins = [
-    'https://test-api.zecevicdev.com',
+    'http://localhost:5000',
     'https://localhost:5000',
     'http://localhost:3000'
 ];
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // 2. Globalni rate limiter - 100 req/min po IP
 app.use(globalLimiter);
@@ -55,16 +55,19 @@ app.use(helmet({
 // 4. Compression - gzip kompresija svih odgovora (~70% manja veličina)
 app.use(compression());
 
+// 5. Cookie parser - za čitanje HttpOnly refresh token kolačića
+app.use(cookieParser());
+
 // 3. ZATIM: JSON parser za sve ostale rute
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // 4. Sve ostale API rute
 app.use('/api/auth', authRouter);
 app.use('/api/korisnici', korisniciRouter);
 app.use('/api/kursevi', kurseviRouter);
 app.use('/api/lekcije', lekcijeRouter);
-app.use('/api/wishlist', wishlistRouter);
+
 app.use('/api/kupovina', kupovinaRouter);
 app.use('/api/ratings', ratingsRouter);
 app.use('/api/komentari', komentariRouter);
@@ -72,7 +75,6 @@ app.use('/api/kompletirane_lekcije', kompletirane_lekcijeRouter);
 app.use('/api/popusti', popustiRouter);
 app.use('/api/rezultati_kviza', rezultatiKvizaRouter);
 app.use('/api/sekcije', sekcijeRouter);
-// Paddle route removed - using MSU/Chipcard payments via /api/msu
 app.use('/api/admin', adminRouter);
 app.use('/api/msu', msuPaymentRouter);
 app.use('/api/subscription', subscriptionStatusRouter);
@@ -80,13 +82,20 @@ app.use('/api/subscription', subscriptionRenewalRouter);
 
 // === Global Error Handler (Express middleware) ===
 app.use((err, req, res, next) => {
-    console.error('⚠️ Unhandled Express error:', err.stack);
+    console.error('⚠️ Unhandled Express error:', {
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        user: req.user?.id || 'anonymous',
+        error: err.stack
+    });
     res.status(500).json({ error: 'Interna greška servera' });
 });
 
 // === Cron Jobs ===
 const { startSubscriptionCleanupJob } = require('./jobs/subscriptionCleanup');
 const { startAutoRenewalJob } = require('./jobs/autoRenewalCron');
+const { startRefreshTokenCleanupJob } = require('./jobs/refreshTokenCleanup');
 
 // Start server
 const server = app.listen(port, () => {
@@ -97,16 +106,18 @@ const server = app.listen(port, () => {
 
     // Pokreni auto renewal job
     startAutoRenewalJob();
+
+    // Pokreni refresh token cleanup job
+    startRefreshTokenCleanupJob();
 });
-server.timeout = 30000; // 30 sekundi (bilo 30 minuta - opasno za server pod opterećenjem)
+server.timeout = 30000; // 30 sekundi
 
 // === Global Process Error Handlers ===
-// Sprečavaju da server tiho padne na neuhvaćenim greškama
 process.on('unhandledRejection', (reason, promise) => {
     console.error('❌ Unhandled Promise Rejection:', reason);
 });
 
 process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
-    // Ne radimo process.exit() jer to bi ugasilo server - samo logujemo
+    console.error('❌ Uncaught Exception — server se gasi:', error);
+    process.exit(1); // PM2 će automatski restartovati proces
 });

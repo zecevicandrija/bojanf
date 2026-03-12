@@ -6,6 +6,14 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
+// Dedicirani axios klijent za MSU sa timeout-om od 10s
+// Sprečava da zastoj Chipcard servisa blokira ceo Node.js event loop
+const MSU_TIMEOUT_MS = 10_000;
+const msuClient = axios.create({
+    timeout: MSU_TIMEOUT_MS,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+});
+
 const MSU_API_URL = process.env.MSU_API_URL;
 const MSU_HPP_URL = process.env.MSU_HPP_URL;
 const MERCHANT_NAME = process.env.MSU_MERCHANT_NAME;
@@ -55,15 +63,13 @@ async function createSessionToken(orderData) {
     });
 
     try {
-        const response = await axios.post(MSU_API_URL, postData, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
+        const response = await msuClient.post(MSU_API_URL, postData);
         return response.data;
     } catch (error) {
         console.error('MSU createSessionToken error:', error.message);
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Payment gateway timeout — please try again');
+        }
         throw new Error('Failed to create payment session');
     }
 }
@@ -80,15 +86,13 @@ async function querySession(sessionToken) {
     });
 
     try {
-        const response = await axios.post(MSU_API_URL, postData, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
+        const response = await msuClient.post(MSU_API_URL, postData);
         return response.data;
     } catch (error) {
         console.error('MSU querySession error:', error.message);
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Payment gateway timeout — please try again');
+        }
         throw new Error('Failed to query session');
     }
 }
@@ -119,15 +123,13 @@ async function queryTransaction(params) {
     }
 
     try {
-        const response = await axios.post(MSU_API_URL, postData, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
+        const response = await msuClient.post(MSU_API_URL, postData);
         return response.data;
     } catch (error) {
         console.error('MSU queryTransaction error:', error.message);
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Payment gateway timeout — please try again');
+        }
         throw new Error('Failed to query transaction');
     }
 }
@@ -225,15 +227,13 @@ async function createCITSession(orderData) {
     });
 
     try {
-        const response = await axios.post(MSU_API_URL, postData, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
+        const response = await msuClient.post(MSU_API_URL, postData);
         return response.data;
     } catch (error) {
         console.error('MSU createCITSession error:', error.message);
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Payment gateway timeout — please try again');
+        }
         throw new Error('Failed to create CIT payment session');
     }
 }
@@ -257,7 +257,7 @@ async function executeMITSale(params) {
         amount,
         cardToken,
         traceID,
-        returnUrl = 'https://test-api.zecevicdev.com/api/msu/callback'
+        returnUrl = 'http://localhost:5000/api/msu/callback'
     } = params;
 
     // MIT EXTRA: Recurring:R + RecurringType:Subscription + TraceID
@@ -282,15 +282,13 @@ async function executeMITSale(params) {
     });
 
     try {
-        const response = await axios.post(MSU_API_URL, postData, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
+        const response = await msuClient.post(MSU_API_URL, postData);
         return response.data;
     } catch (error) {
         console.error('MSU executeMITSale error:', error.message);
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Payment gateway timeout — please try again');
+        }
         throw new Error('Failed to execute MIT sale');
     }
 }

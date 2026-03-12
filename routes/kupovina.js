@@ -2,14 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const authMiddleware = require('../middleware/token');
-
-// Middleware: Samo admin može pristupiti
-const requireAdmin = (req, res, next) => {
-    if (req.user.uloga !== 'admin') {
-        return res.status(403).json({ error: 'Samo admin ima pristup ovoj ruti.' });
-    }
-    next();
-};
+const requireAdmin = require('../middleware/requireAdmin');
+const { validate } = require('../middleware/validate');
+const { createKupovinaSchema } = require('../validators/ostaleSchemas');
 
 // Endpoint to fetch purchased courses for a user
 // Korisnik treba da VIDI svoje kurseve čak i kada je subscription istekao
@@ -48,7 +43,7 @@ router.get('/user/:korisnikId', authMiddleware, async (req, res) => {
 });
 
 // Endpoint za dodavanje kupovine (SAMO ADMIN)
-router.post('/', authMiddleware, requireAdmin, async (req, res) => {
+router.post('/', authMiddleware, requireAdmin, validate(createKupovinaSchema), async (req, res) => {
     try {
         const { korisnik_id, kurs_id, popust_id } = req.body;
         const query = 'INSERT INTO kupovina (korisnik_id, kurs_id, popust_id) VALUES (?, ?, ?)';

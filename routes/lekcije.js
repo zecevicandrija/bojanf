@@ -1,31 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const db = require('../db');
 const authMiddleware = require('../middleware/token');
+const requireAdmin = require('../middleware/requireAdmin');
 const checkSubscription = require('../middleware/checkSubscription');
 const { cacheMiddleware, invalidateCache } = require('../middleware/cacheMiddleware');
-// Uvozimo ispravne funkcije iz našeg Bunny.js helpera
-const { createVideo, uploadVideo, getSecurePlayerUrl, createUploadCredentials } = require('../utils/bunny');
-
-// Multer ostaje isti, on samo priprema fajl u memoriji
-const fs = require('fs');
-const path = require('path');
-
-// IZMENA: Koristimo disk storage umesto memory storage da ne bi gušili RAM
-// Fajlovi će privremeno biti sačuvani u 'uploads/' folderu
-const upload = multer({ dest: 'uploads/' });
+const { getSecurePlayerUrl, createUploadCredentials } = require('../utils/bunny');
+const { validate } = require('../middleware/validate');
+const { prepareUploadSchema, createLekcijaSchema, updateLekcijaSchema, deepseekReviewSchema } = require('../validators/lekcijeSchemas');
 
 
 // --- NOVA RUTA: Priprema za direktan upload ---
 // Frontend poziva ovu rutu da dobije kredencijale za direktan TUS upload na Bunny
-router.post('/prepare-upload', async (req, res) => {
+router.post('/prepare-upload', authMiddleware, requireAdmin, validate(prepareUploadSchema), async (req, res) => {
     try {
         const { title } = req.body;
-
-        if (!title) {
-            return res.status(400).json({ error: 'Naslov videa je obavezan.' });
-        }
 
         // Generiši kredencijale za direktan upload
         const credentials = await createUploadCredentials(title);
@@ -39,18 +28,13 @@ router.post('/prepare-upload', async (req, res) => {
 
 // --- POST Dodavanje lekcije (NOVA LOGIKA - samo metadata) ---
 // Video je već uploadovan direktno na Bunny, ovde samo čuvamo metadata
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, requireAdmin, validate(createLekcijaSchema), async (req, res) => {
     try {
-        const { course_id, title, content, sekcija_id, assignment, video_guid } = req.body;
-
-        // Validacija - video_guid dolazi sa frontenda nakon uspešnog direktnog uploada
-        if (!course_id || !title || !content || !video_guid) {
-            return res.status(400).json({ error: 'Sva polja su obavezna (course_id, title, content, video_guid).' });
-        }
+        const { course_id, title, content, sekcija_id, video_guid } = req.body;
 
         // Čuvamo lekciju u bazu - video je već na Bunny-ju
-        const query = 'INSERT INTO lekcije (course_id, title, content, video_url, sekcija_id, assignment) VALUES (?, ?, ?, ?, ?, ?)';
-        await db.query(query, [course_id, title, content, video_guid, sekcija_id || null, assignment || null]);
+        const query = 'INSERT INTO lekcije (course_id, title, content, video_url, sekcija_id) VALUES (?, ?, ?, ?, ?)';
+        await db.query(query, [course_id, title, content, video_guid, sekcija_id || null]);
 
         invalidateCache('/api/lekcije'); // Obriši keš lekcija
         res.status(201).json({ message: 'Lekcija uspešno dodata.' });
@@ -60,46 +44,34 @@ router.post('/', async (req, res) => {
     }
 });
 
-// --- PUT Ažuriranje lekcije (AŽURIRANA LOGIKA) ---
-router.put('/:id', upload.single('video'), async (req, res) => {
-    let filePath = null;
+// --- PUT Ažuriranje lekcije (BEZ MULTER-a — video se šalje direktno na Bunny sa frontenda) ---
+router.put('/:id', authMiddleware, requireAdmin, validate(updateLekcijaSchema), async (req, res) => {
     try {
         const lessonId = req.params.id;
-        // IZMENA: Umesto 'section' sada primamo 'sekcija_id'
-        const { course_id, title, content, sekcija_id, video_url, assignment } = req.body;
-        if (!course_id || !title || !content) {
-            if (req.file) fs.unlinkSync(req.file.path);
-            return res.status(400).json({ error: 'Nedostaju obavezna polja.' });
+        const { course_id, title, content, sekcija_id, video_guid } = req.body;
+
+        // Ako je novi video_guid prosleđen (zamena videa), koristimo njega.
+        // U suprotnom, zadržavamo stari video_url iz baze.
+        let newVideoUrl;
+        if (video_guid) {
+            newVideoUrl = video_guid;
+        } else {
+            // Dohvati postojeći video_url iz baze
+            const [existing] = await db.query('SELECT video_url FROM lekcije WHERE id = ?', [lessonId]);
+            if (existing.length === 0) {
+                return res.status(404).json({ error: `Lekcija sa ID-jem ${lessonId} nije pronađena.` });
+            }
+            newVideoUrl = existing[0].video_url;
         }
 
-        let newVideoUrl = video_url || '';
-        if (req.file) {
-            filePath = req.file.path;
-            const videoObject = await createVideo(title);
-            const videoGuid = videoObject.guid;
-
-            // IZMENA: Stream
-            const fileStream = fs.createReadStream(filePath);
-            await uploadVideo(videoGuid, fileStream);
-
-            newVideoUrl = videoGuid;
-        }
-
-        // IZMENA: Ažuriran SQL upit da koristi 'sekcija_id'
-        const query = 'UPDATE lekcije SET course_id = ?, title = ?, content = ?, video_url = ?, sekcija_id = ?, assignment = ? WHERE id = ?';
-        // IZMENA: Prosleđujemo 'sekcija_id' u upit
-        await db.query(query, [course_id, title, content, newVideoUrl, sekcija_id, assignment, lessonId]);
+        const query = 'UPDATE lekcije SET course_id = ?, title = ?, content = ?, video_url = ?, sekcija_id = ? WHERE id = ?';
+        await db.query(query, [course_id, title, content, newVideoUrl, sekcija_id, lessonId]);
 
         res.status(200).json({ message: `Lekcija sa ID-jem ${lessonId} uspešno ažurirana.` });
-        invalidateCache('/api/lekcije'); // Obriši keš lekcija
+        invalidateCache('/api/lekcije');
     } catch (error) {
         console.error('Greška pri ažuriranju lekcije:', error);
         res.status(500).json({ error: 'Došlo je do greške na serveru.' });
-    } finally {
-        // Cleanup
-        if (filePath && fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
     }
 });
 
@@ -148,7 +120,7 @@ router.get('/course/:courseId', cacheMiddleware(300), async (req, res) => {
 });
 
 // DELETE Brisanje lekcije (NEMA IZMENA)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, requireAdmin, async (req, res) => {
     try {
         const lessonId = req.params.id;
         const [results] = await db.query('DELETE FROM lekcije WHERE id = ?', [lessonId]);
@@ -194,7 +166,7 @@ router.get('/count/:courseId', async (req, res) => {
 });
 
 // DeepSeek AI ruta
-router.post('/deepseek-review', async (req, res) => {
+router.post('/deepseek-review', authMiddleware, requireAdmin, validate(deepseekReviewSchema), async (req, res) => {
     const { code, language } = req.body;
     try {
         const response = await fetch('https://api.deepseek.com/chat/completions', {

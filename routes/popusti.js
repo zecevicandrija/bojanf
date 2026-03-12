@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { validate } = require('../middleware/validate');
+const { createPopustSchema, applyPopustSchema } = require('../validators/ostaleSchemas');
 
 // Endpoint for applying a discount code (sada je zastareo, /validate je bolji)
-router.post('/apply', async (req, res) => {
+router.post('/apply', validate(applyPopustSchema), async (req, res) => {
     try {
         const { code } = req.body;
         const query = 'SELECT procenat FROM popusti WHERE kod = ?';
@@ -20,13 +22,9 @@ router.post('/apply', async (req, res) => {
 });
 
 // Endpoint for creating a discount code
-router.post('/create', async (req, res) => {
+router.post('/create', validate(createPopustSchema), async (req, res) => {
     try {
         const { code, discountPercent } = req.body;
-
-        if (!code || discountPercent === undefined) {
-            return res.status(400).json({ success: false, message: 'Sva polja su obavezna' });
-        }
 
         const query = 'INSERT INTO popusti (kod, procenat) VALUES (?, ?)';
         await db.query(query, [code, discountPercent]);
@@ -42,16 +40,9 @@ router.post('/create', async (req, res) => {
 });
 
 // Endpoint for validating a discount code
-router.post('/validate', async (req, res) => {
+router.post('/validate', validate(applyPopustSchema), async (req, res) => {
     try {
         const { code } = req.body;
-
-        if (!code || !code.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Kod popusta je obavezan.'
-            });
-        }
 
         const query = 'SELECT * FROM popusti WHERE kod = ?';
         const [results] = await db.query(query, [code.trim().toUpperCase()]);

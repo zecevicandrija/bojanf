@@ -1,18 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { validate } = require('../middleware/validate');
+const { createRatingSchema } = require('../validators/ostaleSchemas');
 
 // Endpoint za dodavanje ili ažuriranje ocene
-router.post('/', async (req, res) => {
+router.post('/', validate(createRatingSchema), async (req, res) => {
     try {
         const { korisnik_id, kurs_id, ocena } = req.body;
-
-        if (!korisnik_id || !kurs_id || !ocena) {
-            return res.status(400).json({ error: 'Nedostaju obavezna polja' });
-        }
-        if (ocena < 1 || ocena > 5) {
-            return res.status(400).json({ error: 'Ocena mora biti između 1 i 5.' });
-        }
 
         // 1. Proveri da li je korisnik kupio kurs
         const [kupovinaResults] = await db.query(

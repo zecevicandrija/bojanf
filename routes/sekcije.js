@@ -2,16 +2,14 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { validate } = require('../middleware/validate');
+const { createSekcijaSchema, updateSekcijaSchema, orderSekcijeSchema } = require('../validators/ostaleSchemas');
 
 // --- PUT /api/sekcije/order - Ažuriranje redosleda sekcija ---
 // Ova ruta ostaje nepromenjena
-router.put('/order', async (req, res) => {
+router.put('/order', validate(orderSekcijeSchema), async (req, res) => {
     try {
-        const { orderedIds } = req.body; // Očekujemo niz ID-jeva: [3, 1, 2]
-
-        if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
-            return res.status(400).json({ error: 'Niz ID-jeva je neophodan.' });
-        }
+        const { orderedIds } = req.body;
 
         const promises = orderedIds.map((id, index) => {
             const query = 'UPDATE sekcije SET redosled = ? WHERE id = ?';
@@ -30,14 +28,10 @@ router.put('/order', async (req, res) => {
 
 // --- PUT /api/sekcije/:id - Izmena naziva i THUMBNAIL-a sekcije ---
 // IZMENJENO: Dodata je logika za ažuriranje thumbnail-a
-router.put('/:id', async (req, res) => {
+router.put('/:id', validate(updateSekcijaSchema), async (req, res) => {
     try {
         const { id } = req.params;
-        const { naziv, thumbnail } = req.body; // Dohvatamo i thumbnail
-
-        if (!naziv) {
-            return res.status(400).json({ error: 'Naziv sekcije je obavezan.' });
-        }
+        const { naziv, thumbnail } = req.body;
 
         // Ažuriramo i naziv i thumbnail. Ako je thumbnail prazan string, sačuvaće se kao NULL.
         const query = 'UPDATE sekcije SET naziv = ?, thumbnail = ? WHERE id = ?';
@@ -79,13 +73,9 @@ router.delete('/:id', async (req, res) => {
 
 // --- POST /api/sekcije - Kreiranje nove sekcije za kurs sa THUMBNAIL-om ---
 // IZMENJENO: Dodata je logika za dodavanje thumbnail-a
-router.post('/', async (req, res) => {
+router.post('/', validate(createSekcijaSchema), async (req, res) => {
     try {
-        const { kurs_id, naziv, thumbnail } = req.body; // Dohvatamo i thumbnail
-
-        if (!kurs_id || !naziv) {
-            return res.status(400).json({ error: 'ID kursa i naziv sekcije su obavezni.' });
-        }
+        const { kurs_id, naziv, thumbnail } = req.body;
 
         // Pronađi najveći trenutni `redosled` za dati kurs da bi novu sekciju dodali na kraj
         const [maxOrderResult] = await db.query(

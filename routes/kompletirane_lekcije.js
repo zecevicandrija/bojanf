@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { cacheMiddleware, invalidateCache } = require('../middleware/cacheMiddleware');
+const { validate } = require('../middleware/validate');
+const { completeLekcijaSchema, uncompleteLekcijaSchema } = require('../validators/ostaleSchemas');
 
 // Endpoint za dobavljanje završenih lekcija po korisniku (keširano 60s)
 router.get('/korisnik/:korisnikId', cacheMiddleware(60), async (req, res) => {
@@ -17,13 +19,9 @@ router.get('/korisnik/:korisnikId', cacheMiddleware(60), async (req, res) => {
 });
 
 // Endpoint za dodavanje nove završenog lekcije
-router.post('/', async (req, res) => {
+router.post('/', validate(completeLekcijaSchema), async (req, res) => {
     try {
         const { korisnik_id, kurs_id, lekcija_id } = req.body;
-
-        if (!korisnik_id || !kurs_id || !lekcija_id) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
 
         // Provera da li je lekcija već kompletirana da se ne duplira unos
         const checkQuery = 'SELECT id FROM kompletirane_lekcije WHERE korisnik_id = ? AND lekcija_id = ?';
@@ -46,13 +44,9 @@ router.post('/', async (req, res) => {
 
 // === NOVA RUTA ZA BRISANJE (UN-CHECK) ===
 // Briše zapis na osnovu korisnika i lekcije
-router.delete('/', async (req, res) => {
+router.delete('/', validate(uncompleteLekcijaSchema), async (req, res) => {
     try {
         const { korisnik_id, lekcija_id } = req.body;
-
-        if (!korisnik_id || !lekcija_id) {
-            return res.status(400).json({ error: 'Nedostaju obavezna polja (korisnik_id, lekcija_id).' });
-        }
 
         const query = 'DELETE FROM kompletirane_lekcije WHERE korisnik_id = ? AND lekcija_id = ?';
         const [results] = await db.query(query, [korisnik_id, lekcija_id]);

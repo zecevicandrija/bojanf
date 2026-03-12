@@ -1,4 +1,4 @@
-// token.js
+// token.js - Auth middleware za verifikaciju access tokena
 const jwt = require('jsonwebtoken');
 
 const authMiddleware = (req, res, next) => {
@@ -25,7 +25,19 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(401).json({ message: 'Token nije validan.' });
+        // KLJUČNA RAZLIKA: Razlikujemo istekao token od potpuno nevažećeg
+        if (error.name === 'TokenExpiredError') {
+            // 401 sa posebnom porukom — frontend zna da treba da refreshuje
+            return res.status(401).json({ 
+                message: 'Token je istekao.', 
+                code: 'TOKEN_EXPIRED' 
+            });
+        }
+        // Token je potpuno nevažeći (falsifikovan, pogrešan potpis, itd.)
+        return res.status(401).json({ 
+            message: 'Token nije validan.', 
+            code: 'TOKEN_INVALID' 
+        });
     }
 };
 
