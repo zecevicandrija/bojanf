@@ -257,7 +257,7 @@ async function executeMITSale(params) {
         amount,
         cardToken,
         traceID,
-        returnUrl = 'http://localhost:5000/api/msu/callback'
+        returnUrl = 'https://test-api.zecevicdev.com/api/msu/callback'
     } = params;
 
     // MIT EXTRA: Recurring:R + RecurringType:Subscription + TraceID

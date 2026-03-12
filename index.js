@@ -36,7 +36,7 @@ app.set('trust proxy', 1);
 
 // 1. CORS se primenjuje na sve zahteve, pa ide prvi
 const allowedOrigins = [
-    'http://localhost:5000',
+    'https://test-api.zecevicdev.com',
     'https://localhost:5000',
     'http://localhost:3000'
 ];

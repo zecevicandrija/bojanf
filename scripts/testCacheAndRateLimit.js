@@ -11,7 +11,7 @@
  * 3. Da li može da obradi više simultanih korisnika
  */
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'https://test-api.zecevicdev.com';
 
 // ============ POMOĆNE FUNKCIJE ============
 
