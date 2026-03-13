@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
+import api from '../login/api';
+import { useAuth } from '../login/auth';
 import './PaymentResult.css';
 
 const PaymentResult = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { setUser } = useAuth();
     const [paymentStatus, setPaymentStatus] = useState('loading');
     const [transactionData, setTransactionData] = useState(null);
     const [error, setError] = useState('');
@@ -50,6 +53,14 @@ const PaymentResult = () => {
 
                     if (response.data.transaction.status === 'APPROVED') {
                         setPaymentStatus('success');
+                        // Osveži user podatke u auth kontekstu nakon uspešnog plaćanja
+                        try {
+                            const meResponse = await api.get('/api/auth/me');
+                            setUser(meResponse.data);
+                            localStorage.setItem('user', JSON.stringify(meResponse.data));
+                        } catch (e) {
+                            console.error('Failed to refresh user data:', e);
+                        }
                     } else if (response.data.transaction.status === 'FAILED') {
                         setPaymentStatus('failed');
                     } else if (response.data.transaction.status === 'CANCELLED') {
@@ -77,7 +88,7 @@ const PaymentResult = () => {
     };
 
     const handleGoBack = () => {
-        navigate('/produzivanje');
+        navigate('/');
     };
 
     if (paymentStatus === 'loading') {

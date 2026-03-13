@@ -110,6 +110,9 @@ const Instruktor = () => {
             <header className="dashboard-header">
                 <h1>Instruktorska Tabla</h1>
                 <p>Dobrodošli, {user?.ime}! Upravljajte svojim kursevima i pratite zaradu.</p>
+                <button className="dodaj-korisnika-btn" onClick={() => navigate('/dodajkorisnika')}>
+                    <i className="ri-user-add-line"></i> Dodaj Korisnika
+                </button>
             </header>
 
             <div className="dashboard-main-content">
