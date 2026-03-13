@@ -1,16 +1,3 @@
-:root {
-  --primary-color: #ff3c00;
-  --secondary-color: #ff3c00;
-  --accent-color: #ff3c00;
-  --text-color: #f0f0f0; /* Prilagođeno za tamnu pozadinu */
-  --card-bg: #ffffff;
-  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --button-bg: var(--primary-color);
-  --button-text: #fff;
-  --button-hover: var(--secondary-color);
-  --fallback-bg-color: #1a1a1a; /* Tamna boja ako slika ne uspe da se učita */
-}
-
 /* Global Reset */
 * {
   box-sizing: border-box;
@@ -18,60 +5,16 @@
   padding: 0;
 }
 
-/* --- KONAČNO REŠENJE ZA POZADINU --- */
-
 html {
-  /* Na HTML postavljamo samo rezervnu boju */
-  background-color: var(--fallback-bg-color);
+  background-color: #fff;
 }
 
 body {
-  position: relative; /* Neophodno za z-index pseudo-elementa */
-  background-color: transparent; /* Telo mora biti providno! */
-  font-family: "Josefin Sans", sans-serif;
-  color: var(--text-color);
+  font-family: sans-serif;
+  color: #111;
 }
 
-/* Kreiramo pseudo-element koji će služiti kao fiksirana pozadina.
-  Ovo je najstabilniji način koji radi na SVIM pretraživačima.
-*/
-body::before {
-  content: '';
-  position: fixed;   /* Fiksiran u odnosu na ekran */
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;       /* Postavlja ga IZA svog ostalog sadržaja */
-
-  /* Sve stilove za pozadinu prebacujemo ovde */
-  /* background-image: url('../src/images/pozadina3.png'); */
-  background-image: url('../src/images/filippozadina.jpg');
-
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
-
-#root, .App {
-  /* Osiguravamo da su i glavni kontejneri providni */
-  background-color: transparent;
-  min-height: 100vh;
-}
-
-
-/* App container - Opcionalno, može i da se obriše ako ne koristite .App klasu */
+#root,
 .App {
-  text-align: center;
-  padding: 1rem;
-}
-
-/* Header - Opcionalno, može i da se obriše */
-.App-header {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  min-height: 100vh;
 }

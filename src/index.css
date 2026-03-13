@@ -1,19 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&display=swap");
-@import url('https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css');
-@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+/* index.css - CLEAN SLATE */
 
-nav {
-  font-family: "Josefin Sans", sans-serif;
-
-}
-body {
-  margin: 0;
-  font-family: "Josefin Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+/* Premium Font Pairing:
+   - Outfit: Geometrijski sans-serif za naslove — moderan, jak, premium
+   - Plus Jakarta Sans: Humanistički sans-serif za body — topao, čitljiv
+*/
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
