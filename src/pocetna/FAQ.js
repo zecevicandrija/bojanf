@@ -1,141 +1,77 @@
-'use client';
-
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RiAddLine, RiSubtractLine, RiQuestionAnswerLine, RiArrowRightLine } from 'react-icons/ri';
+import { RiArrowDownLine, RiScissorsLine } from 'react-icons/ri';
 import styles from './FAQ.module.css';
 
-// Logotipi
-import visaSecure from '../images/logotipi/visa-secure_blu_72dpi.jpg';
-import mcIdCheck from '../images/logotipi/mc_idcheck_hrz_rgb_pos.png';
-import maestro from '../images/logotipi/ms_acc_opt_70_1x.png';
-import mastercard from '../images/logotipi/mc_acc_opt_70_1x.png';
-import dina from '../images/logotipi/DinaCard znak.jpg';
-import visa from '../images/logotipi/Visa_Brandmark_Blue_RGB_2021.png';
-import chipcard from '../images/logotipi/ChipCard LOGO 2021_rgb.jpg';
-
-const FAQ = ({ navigate }) => {
-    const faqs = [
-        {
-            q: <>Kakav je <b className="bold-orange-glow">život</b> video editora?</>,
-            a: <>Radiš <b className="bold-white">kad hoćeš, gde hoćeš</b>. Tvoj posao ti stane u ranac zajedno sa laptopom. Nema šefa nad glavom, nema kancelarije. Imaš <b className="bold-orange-glow">slobodu</b> da upravljaš svojim vremenom i pritom <b className="bold-white">zarađuješ više</b> nego neko ko je 8 sati zatvoren u kancelariji. Jedina razlika između mene i tebe je što sam ja već krenuo tim putem. Ti si sada na početku – ali to je <b className="bold-white">sve što ti treba</b>.</>
-        },
-        {
-            q: <>Da li mi je potrebno prethodno <b className="bold-orange-glow">iskustvo</b>?</>,
-            a: <><b className="bold-white">Ne</b>. Akademija je dizajnirana za <b className="bold-white">potpune početnike</b> i vodi vas <b className="bold-orange-glow">korak po korak</b> do uspešnog video-editora.</>
-        },
-        {
-            q: <>Da li se akademija <b className="bold-orange-glow">ažurira</b> vremenom?</>,
-            a: <><b className="bold-white">Da</b>, akademija se <b className="bold-orange-glow">redovno ažurira</b>! Stalno dodajemo <b className="bold-white">nove lekcije, savete i alate</b> kako bi akademija išla u korak s najnovijim trendovima u svetu editovanja.</>
-        },
-    ];
-
+const FAQ = () => {
     const [openIndex, setOpenIndex] = useState(null);
 
-    const toggleFAQ = index => {
+    const toggleFAQ = (index) => {
         setOpenIndex(openIndex === index ? null : index);
     };
 
-    return (
-        <section className={styles.section}>
-            <div className="container">
+    const faqs = [
+        {
+            question: "Da li je ova edukacija samo za početnike?",
+            answer: "Ne. Moduli su dizajnirani tako da početnicima daju temelj, a profesionalcima tehnike koje im omogućavaju da dupliraju cene svojih usluga."
+        },
+        {
+            question: "Šta ako nemam svoj salon?",
+            answer: "Znanje koje dobijaš primenjivo je svuda. Naučićete kako da izgradite svoje ime i privučete klijente, radili u tuđem salonu, iznajmljivali stolicu ili započeli sopstveni biznis."
+        },
+        {
+            question: "Koliko mi je potrebno da povratim investiciju u ovaj kurs?",
+            answer: "Većina polaznica povrati investiciju u prvih 3 meseca nakon primene naših tehnika. Kroz nove savladane veštine, kurs otplaćuje sam sebe."
+        }
+    ];
 
-                <div className={styles.header}>
-                    <h2 className="section-title">ČESTO POSTAVLJANA PITANJA</h2>
-                    <p className="section-subtitle">Sve što treba da znaš pre nego što počneš.</p>
+    return (
+        <section className={styles.faqSection}>
+            {/* Background layers */}
+            <div className={styles.noiseOverlay}></div>
+            <div className={styles.gridOverlay}></div>
+            <div className={styles.container}>
+                <div className={styles.leftColumn}>
+                    <div className={styles.stickyContent}>
+                        <div className={styles.headlineGroup}>
+                            <h2 className={styles.headlineMain}>TVOJA POSLEDNJA</h2>
+                            <h2 className={styles.headlineAccent}>PITANJA<span className={styles.desktopDot}>.</span></h2>
+                        </div>
+                        <p className={styles.description}>
+                            Znaš da ti ovo treba. Ako se i dalje dvoumiš, pročitaj odgovore ispod. Ako tvog pitanja nema, pošalji nam poruku.
+                        </p>
+                        <button className={styles.ctaButton}>
+                            <span>ZAPOČNI KURS</span>
+                            <RiScissorsLine className={styles.ctaIcon} />
+                        </button>
+                    </div>
                 </div>
 
-                <div className={styles.faqList}>
-                    {faqs.map((faq, index) => {
-                        const isOpen = openIndex === index;
-
-                        return (
-                            <motion.div
-                                key={index}
-                                className={`${styles.faqItem} ${isOpen ? styles.active : ''}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                            >
-                                <button
-                                    className={styles.questionButton}
+                <div className={styles.rightColumn}>
+                    <div className={styles.accordion}>
+                        {faqs.map((faq, index) => {
+                            const isOpen = openIndex === index;
+                            return (
+                                <div
+                                    key={index}
+                                    className={`${styles.faqItem} ${isOpen ? styles.open : ''}`}
                                     onClick={() => toggleFAQ(index)}
                                 >
-                                    <div className={styles.questionContent}>
-                                        <span className={styles.indexNumber}>0{index + 1}.</span>
-                                        <span className={styles.questionText}>{faq.q}</span>
+                                    <div className={styles.questionWrap}>
+                                        <h3 className={styles.question}>{faq.question}</h3>
+                                        <span className={styles.iconWrap}>
+                                            <RiArrowDownLine className={styles.arrow} />
+                                        </span>
                                     </div>
-
-                                    <div className={`${styles.iconContainer} ${isOpen ? styles.iconOpen : ''}`}>
-                                        {isOpen ? <RiSubtractLine /> : <RiAddLine />}
+                                    <div className={styles.answerWrap}>
+                                        <div className={styles.answerContent}>
+                                            <p className={styles.answer}>{faq.answer}</p>
+                                        </div>
                                     </div>
-                                </button>
-
-                                <AnimatePresence>
-                                    {isOpen && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: "auto", opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                                            className={styles.answerWrapper}
-                                        >
-                                            <div className={styles.answerContent}>
-                                                {faq.a}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                {/* Dekorativni ugao koji svetli kad je aktivno */}
-                                <div className={styles.cornerMarker}></div>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-
-                <motion.div
-                    className={styles.ctaWrapper}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                >
-                    <button className="cta-button primary" onClick={() => navigate('/paket')}>
-                        KRENI SA UČENJEM ODMAH <RiArrowRightLine style={{ marginLeft: '8px' }} />
-                    </button>
-                </motion.div>
-
-                {/* Payment & Security Logos - Reusing global classes or we need to add :global to CSS module */}
-                <motion.div
-                    className="paket-logos-wrapper"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                >
-                    <div className="paket-logos-container">
-                        <div className="logos-group security-group">
-                            <a href="https://rs.visa.com/pay-withvisa/security-and-assistance/protected-everywhere.html" target="_blank" rel="noopener noreferrer">
-                                <img src={visaSecure} alt="Visa Secure" className="logo-img" />
-                            </a>
-                            <a href="http://www.mastercard.com/rs/consumer/credit-cards.html" target="_blank" rel="noopener noreferrer">
-                                <img src={mcIdCheck} alt="Mastercard ID Check" className="logo-img" />
-                            </a>
-                        </div>
-
-                        <div className="logos-group payment-group">
-                            <img src={maestro} alt="Maestro" className="logo-img" />
-                            <img src={mastercard} alt="Mastercard" className="logo-img" />
-                            <img src={dina} alt="DinaCard" className="logo-img" />
-                            <img src={visa} alt="Visa" className="logo-img" />
-                            <a href="https://chipcard.rs/ecommerce/" target="_blank" rel="noopener noreferrer">
-                                <img src={chipcard} alt="ChipCard" className="logo-img" style={{ height: '35px' }} />
-                            </a>
-                        </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </motion.div>
-
+                </div>
             </div>
         </section>
     );

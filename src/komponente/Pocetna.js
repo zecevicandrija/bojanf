@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Pocetna.css';
-import rezultat5 from '../images/rezultat31.png';
-import rezultat2 from '../images/rezultati23.png'
-import rezultat3 from '../images/rezultat32.png'
-import rezultat4 from '../images/rezultati4.png'
 import { useInView } from 'react-intersection-observer';
 
 // IMPORTUJEMO NOVU KOMPONENTU
 import Hero from '../pocetna/Hero';
 import Features from '../pocetna/Features';
 import Testimonijal from '../pocetna/Testimonijal';
-import Results from '../pocetna/Results';
 import FAQ from '../pocetna/FAQ';
 import Footer from '../pocetna/Footer';
 import Motion from '../pocetna/Motion';
+import Zid from '../pocetna/Zid';
 
 const ChevronIcon = ({ isOpen }) => <i className={`ri-arrow-down-s-line accordion-chevron ${isOpen ? 'open' : ''}`}></i>;
 
@@ -31,34 +27,26 @@ const AnimateOnScroll = ({ children }) => {
     );
 };
 
-
 const Pocetna = () => {
     const navigate = useNavigate();
     return (
         <div className="pocetna-wrapper">
             <main className="pocetna-page">
-                {/* 3. OBMOTAVAMO SVAKU SEKCIJU */}
+                {/* HERO i MOTION komponente isključene iz AnimateOnScroll jer imaju napredan interni GSAP */}
+                <Hero navigate={navigate} />
+                <Motion navigate={navigate} />
 
-                {/* HERO JE SADA POSEBNA KOMPONENTA */}
                 <AnimateOnScroll>
-                    <Hero navigate={navigate} />
+                    <Zid navigate={navigate} />
                 </AnimateOnScroll>
 
-                <AnimateOnScroll>
-                    <Motion navigate={navigate} />
-                </AnimateOnScroll>
-
-                <AnimateOnScroll>
+                {/* <AnimateOnScroll>
                     <Features navigate={navigate} />
                 </AnimateOnScroll>
 
                 <AnimateOnScroll>
                     <Testimonijal />
-                </AnimateOnScroll>
-
-                <AnimateOnScroll>
-                    <Results navigate={navigate} />
-                </AnimateOnScroll>
+                </AnimateOnScroll> */}
 
                 <AnimateOnScroll>
                     <FAQ navigate={navigate} />

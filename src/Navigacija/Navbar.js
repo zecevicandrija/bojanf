@@ -1,6 +1,7 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../login/auth';
+import { motion } from 'framer-motion';
 import './Navbar.css';
 import { ThemeContext } from '../komponente/ThemeContext';
 import logo from '../images/logo.webp';
@@ -11,6 +12,8 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
     const [scrolled, setScrolled] = useState(false);
+    const [hidden, setHidden] = useState(false);
+    const lastScrollY = useRef(0);
     const location = useLocation();
 
     // Cart listener
@@ -30,7 +33,17 @@ const Navbar = () => {
 
     // Scroll detection
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 30);
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            setScrolled(currentScrollY > 30);
+
+            if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+                setHidden(true);
+            } else {
+                setHidden(false);
+            }
+            lastScrollY.current = currentScrollY;
+        };
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -52,81 +65,131 @@ const Navbar = () => {
 
     const handleMenuToggle = () => setIsMenuOpen(!isMenuOpen);
     const closeMobileMenu = () => setIsMenuOpen(false);
-    const cartItemCount = cartItems.length;
 
     const isActive = (path) => location.pathname === path;
 
     return (
         <>
-            <nav className={`navbar ${isDarkTheme ? 'dark' : ''} ${scrolled ? 'scrolled' : ''}`}>
+            <motion.nav
+                className={`navbar ${scrolled ? 'scrolled' : ''}`}
+                initial={{ y: -150, opacity: 0 }}
+                animate={{ y: hidden ? -150 : 0, opacity: 1 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
                 <div className="navbar-container">
+                    <div className="navbar-col navbar-col-left">
+                        {/* ===== Logo ===== */}
+                        <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
+                            <div className="logo-wrapper">
+                                <img src={logo} alt="Bojan Fashion Barbershop" className="logo" />
+                            </div>
+                            <div className="logo-text">
+                                <span className="logo-name">Bojan Fashion</span>
+                            </div>
+                        </Link>
+                    </div>
 
-                    {/* ===== Logo ===== */}
-                    <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
-                        <div className="logo-wrapper">
-                            <img src={logo} alt="Bojan Fashion Barbershop" className="logo" />
-                        </div>
-                        <div className="logo-text">
-                            <span className="logo-name">Bojan Fashion</span>
-                            <span className="logo-tagline">Barbershop Academy</span>
-                        </div>
-                    </Link>
-
-                    {/* ===== Desktop Nav Links ===== */}
-                    <ul className="navbar-menu-desktop">
-                        <li>
-                            <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
-                                Početna
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/kursevi" className={`nav-link ${isActive('/kursevi') ? 'active' : ''}`}>
-                                Kursevi
-                            </Link>
-                        </li>
-                        {user && (
+                    <div className="navbar-col navbar-col-center">
+                        {/* ===== Desktop Pill Menu ===== */}
+                        <ul className="navbar-menu-desktop">
                             <li>
-                                <Link to="/kupljenkurs" className={`nav-link ${isActive('/kupljenkurs') ? 'active' : ''}`}>
-                                    Lekcije
+                                <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
+                                    Početna
                                 </Link>
                             </li>
-                        )}
-                    </ul>
-
-                    {/* ===== Right Actions ===== */}
-                    <div className="navbar-actions">
-                        {user && (
-                            <>
-                                {(user.uloga === 'admin' || user.uloga === 'instruktor') && (
-                                    <Link to="/instruktor" className="nav-icon-btn" title="Dashboard">
-                                        <i className="ri-line-chart-line"></i>
-                                    </Link>
-                                )}
-                                <Link to="/profil" className="nav-icon-btn" title="Profil">
-                                    <i className="ri-account-circle-line"></i>
+                            <li>
+                                <Link to="/kursevi" className={`nav-link ${isActive('/kursevi') ? 'active' : ''}`}>
+                                    Kursevi
                                 </Link>
-                            </>
-                        )}
+                            </li>
+                            <li>
+                                <Link
+                                    to="/#footer"
+                                    className="nav-link"
+                                    onClick={(e) => {
+                                        if (location.pathname === '/') {
+                                            e.preventDefault();
+                                            document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
+                                        } else {
+                                            setTimeout(() => {
+                                                document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
+                                            }, 100);
+                                        }
+                                    }}
+                                >
+                                    Kontakt
+                                </Link>
+                            </li>
+                            {user && (
+                                <li>
+                                    <Link to="/kupljenkurs" className={`nav-link ${isActive('/kupljenkurs') ? 'active' : ''}`}>
+                                        Lekcije
+                                    </Link>
+                                </li>
+                            )}
+                        </ul>
+                    </div>
 
-                        {!loading && !user && (
-                            <Link to="/login" className="nav-cta-btn" onClick={closeMobileMenu}>
-                                Prijavi se
-                            </Link>
-                        )}
+                    <div className="navbar-col navbar-col-right">
+                        {/* ===== Right Actions ===== */}
+                        <div className="navbar-actions">
+                            {user && (
+                                <>
+                                    {(user.uloga === 'admin' || user.uloga === 'instruktor') && (
+                                        <Link to="/instruktor" className="nav-icon-btn" title="Dashboard">
+                                            <i className="ri-line-chart-line"></i>
+                                        </Link>
+                                    )}
+                                    <Link to="/profil" className="nav-icon-btn" title="Profil">
+                                        <i className="ri-account-circle-line"></i>
+                                    </Link>
+                                </>
+                            )}
 
-                        {/* Hamburger — mobile only */}
-                        <button
-                            className={`navbar-hamburger ${isMenuOpen ? 'open' : ''}`}
-                            onClick={handleMenuToggle}
-                            aria-label="Toggle menu"
-                        >
-                            <span className="hamburger-line"></span>
-                            <span className="hamburger-line"></span>
-                            <span className="hamburger-line"></span>
-                        </button>
+                            {!loading && !user && (
+                                <Link to="/login" className="nav-cta-btn" onClick={closeMobileMenu}>
+                                    Prijavi se
+                                </Link>
+                            )}
+
+                            {/* Hamburger — mobile only */}
+                            <button
+                                className="navbar-hamburger"
+                                onClick={handleMenuToggle}
+                                aria-label="Toggle menu"
+                            >
+                                <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <motion.path
+                                        stroke="#fff" strokeWidth="2" strokeLinecap="square"
+                                        animate={isMenuOpen ? "open" : "closed"}
+                                        variants={{
+                                            closed: { d: "M0 2H28" },
+                                            open: { d: "M4 4L24 16" }
+                                        }}
+                                    />
+                                    <motion.path
+                                        stroke="#fff" strokeWidth="2" strokeLinecap="square"
+                                        animate={isMenuOpen ? "open" : "closed"}
+                                        variants={{
+                                            closed: { d: "M0 10H28", opacity: 1 },
+                                            open: { d: "M14 10H14", opacity: 0 }
+                                        }}
+                                        transition={{ duration: 0.2 }}
+                                    />
+                                    <motion.path
+                                        stroke="#fff" strokeWidth="2" strokeLinecap="square"
+                                        animate={isMenuOpen ? "open" : "closed"}
+                                        variants={{
+                                            closed: { d: "M0 18H17" },
+                                            open: { d: "M4 16L24 4" }
+                                        }}
+                                    />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </nav>
+            </motion.nav>
 
             {/* ===== Mobile Overlay Menu ===== */}
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
@@ -140,15 +203,34 @@ const Navbar = () => {
                             <span className="mobile-link-num">02</span>
                             <span className="mobile-link-text">Kursevi</span>
                         </Link>
+                        <Link
+                            to="/#footer"
+                            className="mobile-link"
+                            onClick={(e) => {
+                                if (location.pathname === '/') {
+                                    e.preventDefault();
+                                    document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
+                                    closeMobileMenu();
+                                } else {
+                                    closeMobileMenu();
+                                    setTimeout(() => {
+                                        document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
+                                    }, 100);
+                                }
+                            }}
+                        >
+                            <span className="mobile-link-num">03</span>
+                            <span className="mobile-link-text">Kontakt</span>
+                        </Link>
                         {user && (
                             <Link to="/kupljenkurs" className={`mobile-link ${isActive('/kupljenkurs') ? 'active' : ''}`} onClick={closeMobileMenu}>
-                                <span className="mobile-link-num">03</span>
+                                <span className="mobile-link-num">04</span>
                                 <span className="mobile-link-text">Lekcije</span>
                             </Link>
                         )}
                         {user && (
                             <Link to="/profil" className={`mobile-link ${isActive('/profil') ? 'active' : ''}`} onClick={closeMobileMenu}>
-                                <span className="mobile-link-num">{user ? '04' : '03'}</span>
+                                <span className="mobile-link-num">05</span>
                                 <span className="mobile-link-text">Profil</span>
                             </Link>
                         )}

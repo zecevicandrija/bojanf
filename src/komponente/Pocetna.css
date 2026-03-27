@@ -30,6 +30,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: #0A0A0A;
 }
 
 .pocetna-page {
@@ -37,6 +38,7 @@
     color: var(--tekst-primarni);
     font-family: "Josefin Sans", sans-serif;
     overflow-x: hidden;
+    background-color: #0A0A0A;
 }
 
 /* CONTAINER (Koristi se kao globalna klasa u svim modulima) */

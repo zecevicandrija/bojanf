@@ -1,240 +1,139 @@
-// Hero.js — DARK PREMIUM ANGULAR HERO
-// Design System: dizajnskill.md principles applied
-'use client';
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { RiArrowRightLine, RiFileList3Line, RiGroupLine, RiScissorsLine } from 'react-icons/ri';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from './Hero.module.css';
+import heroImg from '../images/bojan2.png';
 
-// Import images
-import heroImg from '../images/filip2.png';
-import heroBg from '../images/background.png';
+gsap.registerPlugin(ScrollTrigger);
 
-const Hero = ({ navigate }) => {
-    // ---- Animation Variants ----
-    const fadeUp = {
-        hidden: { opacity: 0, y: 35 },
-        visible: (delay = 0) => ({
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.8,
-                delay,
-                ease: [0.22, 1, 0.36, 1],
-            },
-        }),
-    };
+const Hero = () => {
+    const heroRef = useRef(null);
+    const contentRef = useRef(null);
+    const imageRef = useRef(null);
 
-    const fadeIn = {
-        hidden: { opacity: 0 },
-        visible: (delay = 0) => ({
-            opacity: 1,
-            transition: {
-                duration: 0.7,
-                delay,
-                ease: 'easeOut',
-            },
-        }),
-    };
+    useEffect(() => {
+        let ctx = gsap.context(() => {
+            // Intro animacije (Staggered fade-in na onload)
+            gsap.fromTo('.intro-item', {
+                y: 50,
+                opacity: 0
+            }, {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                stagger: 0.15,
+                ease: 'power3.out',
+                delay: 0.1
+            });
 
-    const slideIn = {
-        hidden: { opacity: 0, x: 60 },
-        visible: (delay = 0) => ({
-            opacity: 1,
-            x: 0,
-            transition: {
-                duration: 0.9,
-                delay,
-                ease: [0.22, 1, 0.36, 1],
-            },
-        }),
-    };
+            // Scroll animacija (Parallax i Fade out za tekst kako se skroluje nizbrdo)
+            gsap.to(contentRef.current, {
+                scrollTrigger: {
+                    trigger: heroRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: 1,
+                },
+                y: 150,
+                opacity: 0,
+                ease: 'none'
+            });
+
+            // Parallax efekat za sliku (ide blago prema gore)
+            gsap.to(imageRef.current, {
+                scrollTrigger: {
+                    trigger: heroRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: 1,
+                },
+                y: -100,
+                ease: 'none'
+            });
+
+            // Plutajuci hover na "glass card" bedz po uzoru na framer floating card
+            gsap.to('.floating-card', {
+                y: -15,
+                rotation: 2,
+                duration: 3,
+                yoyo: true,
+                repeat: -1,
+                ease: 'sine.inOut'
+            });
+
+        }, heroRef);
+
+        return () => ctx.revert();
+    }, []);
 
     return (
-        <section className={styles.heroSection} id="hero">
-            {/* ===== BACKGROUND LAYERS ===== */}
-            {/* Background image — clipped diagonally on right side */}
-            <img
-                src={heroBg}
-                alt=""
-                className={styles.bgImage}
-                aria-hidden="true"
-            />
-            {/* Noise texture for tangible depth (dizajnskill #4) */}
-            <div className={styles.noiseOverlay} />
-            {/* Ambient warm glow */}
-            <div className={styles.ambientGlow} />
-            {/* Gold accent line at top */}
-            <div className={styles.goldLineTop} />
+        <section className={styles.heroSection} ref={heroRef}>
+            {/* Background layers */}
+            <div className={styles.noiseOverlay}></div>
+            <div className={styles.gridOverlay}></div>
 
-            {/* ===== CONTENT ===== */}
-            <div className={styles.heroContainer}>
+            {/* Main layout */}
+            <div className={styles.container}>
 
-                {/* ======= LEFT COLUMN — Sales Copy ======= */}
-                <div className={styles.leftColumn}>
+                {/* Left column */}
+                <div className={styles.content} ref={contentRef}>
+                    <div className={`${styles.headlineWrapper} intro-item`}>
+                        <span className={styles.solidText}>VRHUNSKI</span>
+                        <span className={styles.outlineText}>BARBER</span>
+                    </div>
 
-                    {/* Premium Badge */}
-                    <motion.div
-                        className={styles.premiumBadge}
-                        variants={fadeUp}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        custom={0}
-                    >
-                        <span className={styles.badgeIcon}>✦</span>
-                        <span className={styles.badgeText}>PREMIUM EDUKACIJA ZA FRIZERE</span>
-                    </motion.div>
+                    {/* Sub-headline bridge */}
+                    <p className={`${styles.subHeadline} intro-item`}>
+                        Edukacija dizajnirana za početnike i profesionalce. Savladaj moderne
+                        tehnike fade-a uz ekspertsko mentorstvo i podigni svoj biznis na viši nivo.
+                    </p>
 
-                    {/* Main Heading — Anchor Font: Playfair Display */}
-                    <motion.h1
-                        className={styles.mainHeading}
-                        variants={fadeUp}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        custom={0.12}
-                    >
-                        Od Početnika do{' '}
-                        <span className={styles.headingHighlight}>Majstora.</span>
-                        <br />
-                        Usavrši Fade i Podigni Svoju Cenu.
-                    </motion.h1>
+                    {/* CTA row */}
+                    <div className={`${styles.actionWrapper} intro-item`}>
+                        <button className={styles.ctaButton}>Apliciraj za kurs</button>
 
-                    {/* Subtitle — 60% opacity (dizajnskill #5) */}
-                    <motion.p
-                        className={styles.subtitle}
-                        variants={fadeUp}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        custom={0.24}
-                    >
-                        Uči od najboljih. Naš premium kurs ti pruža napredne tehnike šišanja.
-                    </motion.p>
-
-                    {/* Social Proof */}
-                    <motion.div
-                        className={styles.socialProof}
-                        variants={fadeUp}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        custom={0.36}
-                    >
-                        <div className={styles.stars}>
-                            {[...Array(5)].map((_, i) => (
-                                <span key={i} className={styles.star}>★</span>
-                            ))}
+                        {/* Social proof */}
+                        <div className={styles.socialProof}>
+                            <div className={styles.avatarStack}>
+                                <img src="https://i.pravatar.cc/100?img=33" alt="Student" className={styles.avatar} />
+                                <img src="https://i.pravatar.cc/100?img=47" alt="Student" className={styles.avatar} />
+                                <img src="https://i.pravatar.cc/100?img=12" alt="Student" className={styles.avatar} />
+                            </div>
+                            <div className={styles.proofText}>
+                                <span className={styles.proofRating}>
+                                    <span className={styles.accent}>★ 4.9/5</span> OCENA MASTERCLASSA
+                                </span>
+                                <span className={styles.proofCount}>PRIDRUŽI SE 500+ POLAZNIKA</span>
+                            </div>
                         </div>
-                        <span className={styles.proofText}>
-                            Pridruži se <span className={styles.proofHighlight}>500+</span> uspešnih studenata
-                        </span>
-                    </motion.div>
-
-                    {/* CTA Buttons */}
-                    <motion.div
-                        className={styles.ctaGroup}
-                        variants={fadeUp}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        custom={0.48}
-                    >
-                        <button
-                            className={styles.ctaPrimary}
-                            onClick={() => navigate('/paket')}
-                            id="hero-cta-primary"
-                        >
-                            <span>Prijavi se na Edukaciju</span>
-                            <RiArrowRightLine className={styles.ctaIcon} />
-                        </button>
-
-                        <button
-                            className={styles.ctaSecondary}
-                            onClick={() => navigate('/kursevi')}
-                            id="hero-cta-secondary"
-                        >
-                            <RiFileList3Line />
-                            <span>Pogledaj Program</span>
-                        </button>
-                    </motion.div>
+                    </div>
                 </div>
 
-                {/* ======= RIGHT COLUMN — Star of the Show (dizajnskill #2) ======= */}
-                <motion.div
-                    className={styles.rightColumn}
-                    variants={slideIn}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    custom={0.15}
-                >
-                    <div className={styles.imageWrapper}>
-                        {/* Gold glow behind image */}
-                        <div className={styles.imageGlow} />
+                {/* Right column – Bojan */}
+                <div className={styles.imageContainer} ref={imageRef}>
+                    {/* Radial Rim Lighting Behind Subject */}
+                    <div className={`${styles.backlightGlow} intro-item`}></div>
 
-                        {/* Decorative angular shape behind — Visual Rhyming */}
-                        <div className={styles.imageAccentShape} />
-
-                        {/* Hero Image — Angular clip-path */}
-                        <img
-                            src={heroImg}
-                            alt="Premium edukacija za frizere — master kurs"
-                            className={styles.heroImage}
-                            loading="eager"
-                        />
-
-                        {/* Glassmorphism floating badge #1 */}
-                        <motion.div
-                            className={styles.floatingBadge}
-                            variants={fadeIn}
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true }}
-                            custom={0.7}
-                        >
-                            <div className={styles.badgeIconCircle}>
-                                <RiGroupLine />
-                            </div>
-                            <div className={styles.badgeInfo}>
-                                <span className={styles.badgeNumber}>500+</span>
-                                <span className={styles.badgeLabel}>Studenata</span>
-                            </div>
-                        </motion.div>
-
-                        {/* Glassmorphism floating badge #2 */}
-                        <motion.div
-                            className={styles.floatingBadge}
-                            variants={fadeIn}
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true }}
-                            custom={0.9}
-                        >
-                            <div className={styles.badgeIconCircle}>
-                                <RiScissorsLine />
-                            </div>
-                            <div className={styles.badgeInfo}>
-                                <span className={styles.badgeNumber}>Pro</span>
-                                <span className={styles.badgeLabel}>Tehnike</span>
-                            </div>
-                        </motion.div>
+                    <div className={`${styles.imageMask} intro-item`}>
+                        <img src={heroImg} alt="Bojan — Barber Masterclass" className={styles.heroImage} />
                     </div>
-                </motion.div>
-            </div>
 
-            {/* Scroll indicator */}
-            <div
-                className={styles.scrollIndicator}
-                onClick={() => {
-                    document.getElementById('kako-radi')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-            >
-                <span className={styles.scrollText}>Skroluj</span>
-                <div className={styles.scrollMouse}>
-                    <div className={styles.scrollDot} />
+                    {/* Glassmorphism badge */}
+                    <div className={`${styles.glassCard} intro-item floating-card`}>
+                        <span className={styles.glassIcon}>🎓</span>
+                        <span className={styles.glassLabel}>INTERNACIONALNO PRIZNAT SERTIFIKAT</span>
+                    </div>
+                </div>
+
+                {/* Bottom-left scroll indicator */}
+                <div className={`${styles.scrollIndicator} intro-item`}>
+                    <div className={styles.scrollLine}></div>
+                    <span className={styles.scrollText}>SCROLL TO EXPLORE</span>
+                </div>
+
+                {/* Bottom-left trust line */}
+                <div className={`${styles.trustedBlock} intro-item`}>
+                    TRUSTED BY 500+ MASTERS&nbsp;&nbsp;//&nbsp;&nbsp;BALKANS' #1 ACADEMY
                 </div>
             </div>
         </section>
