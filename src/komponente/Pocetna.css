@@ -36,7 +36,7 @@
 .pocetna-page {
     flex-grow: 1;
     color: var(--tekst-primarni);
-    font-family: "Josefin Sans", sans-serif;
+    font-family: "Outfit", sans-serif;
     overflow-x: hidden;
     background-color: #0A0A0A;
 }

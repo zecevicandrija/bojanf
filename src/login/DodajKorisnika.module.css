@@ -1,0 +1,285 @@
+/* === DODAJ KORISNIKA MODULE - BOJAN FASHION PREMIUM STYLE === */
+
+@font-face {
+    font-family: 'Monument Extended';
+    src: url('https://fonts.cdnfonts.com/s/19595/MonumentExtended-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Monument Extended';
+    src: url('https://fonts.cdnfonts.com/s/19595/MonumentExtended-Ultrabold.woff') format('woff');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;500;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+
+.dkPage {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0A0A0A;
+    color: #fff;
+    overflow-x: hidden;
+    padding: 6rem 0;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Background layers */
+.noiseOverlay {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 350 350' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.gridOverlay {
+    position: absolute;
+    inset: 0;
+    background-size: 60px 60px;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.dkContainer {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    /* Užije za formu */
+    margin: 0 auto;
+    padding: 0 5%;
+    z-index: 10;
+}
+
+/* Back Button */
+.dkBackBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: none;
+    color: #444;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    transition: color 0.3s;
+    text-transform: uppercase;
+}
+
+.dkBackBtn:hover {
+    color: #ff0033;
+}
+
+/* Header Section */
+.dkHeader {
+    margin-bottom: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.dkHeaderIcon {
+    font-size: 2.5rem;
+    color: #ff0033;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 0, 51, 0.1);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+}
+
+.dkHeader h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.dkHeader p {
+    font-family: 'Outfit', sans-serif;
+    color: #888;
+    max-width: 500px;
+    line-height: 1.6;
+}
+
+/* Form Styles */
+.dkForm {
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 4rem 3rem;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+}
+
+.dkFormGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.dkFullWidth {
+    grid-column: span 2;
+}
+
+.dkField {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dkField label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    color: #666;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dkField label svg {
+    color: #ff0033;
+}
+
+.dkField input,
+.dkField select {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.1rem;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%);
+}
+
+.dkField select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ff0033' stroke-width='3' stroke-linecap='square' stroke-linejoin='arcs'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.25rem center;
+    background-size: 1.2rem;
+    padding-right: 3.5rem;
+    cursor: pointer;
+}
+
+.dkField select option {
+    background: #0A0A0A;
+    color: #fff;
+    padding: 1rem;
+}
+
+.dkField input:focus,
+.dkField select:focus {
+    border-color: #ff0033;
+    outline: none;
+    background: rgba(255, 0, 51, 0.05);
+    box-shadow: 0 0 20px rgba(255, 0, 51, 0.1);
+}
+
+/* Custom styling for date-time-local to match theme */
+.dkField input[type="datetime-local"] {
+    color-scheme: dark;
+}
+
+.dkSubmitBtn {
+    width: 100%;
+    background: #ff0033;
+    color: #fff;
+    border: none;
+    padding: 1.25rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.dkSubmitBtn:hover:not(:disabled) {
+    background: #cc0029;
+    transform: translateY(-2px);
+}
+
+.dkSubmitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dkFeedback {
+    margin-top: 2rem;
+    padding: 1.25rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dkFeedback.success {
+    background: rgba(34, 193, 195, 0.1);
+    color: #22c1c3;
+    border-left: 3px solid #22c1c3;
+}
+
+.dkFeedback.error {
+    background: rgba(255, 0, 51, 0.1);
+    color: #ff0033;
+    border-left: 3px solid #ff0033;
+}
+
+.dkSpin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .dkFormGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .dkFullWidth {
+        grid-column: span 1;
+    }
+
+    .dkForm {
+        padding: 3rem 1.5rem;
+    }
+}

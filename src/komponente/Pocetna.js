@@ -1,28 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RiArrowDownSLine } from 'react-icons/ri';
 import './Pocetna.css';
 import { useInView } from 'react-intersection-observer';
 
-// IMPORTUJEMO NOVU KOMPONENTU
+// HERO i staticne osnovne komponente
 import Hero from '../pocetna/Hero';
-import Features from '../pocetna/Features';
-import Testimonijal from '../pocetna/Testimonijal';
-import FAQ from '../pocetna/FAQ';
-import Footer from '../pocetna/Footer';
-import Motion from '../pocetna/Motion';
-import Zid from '../pocetna/Zid';
 
-const ChevronIcon = ({ isOpen }) => <i className={`ri-arrow-down-s-line accordion-chevron ${isOpen ? 'open' : ''}`}></i>;
+// LAZY LOADED - Komponente koje nisu odmah vidljive
+const Zid = lazy(() => import('../pocetna/Zid'));
+const Motion = lazy(() => import('../pocetna/Motion'));
+const FAQ = lazy(() => import('../pocetna/FAQ'));
+const Footer = lazy(() => import('../pocetna/Footer'));
+const Galerija = lazy(() => import('../pocetna/Galerija'));
 
-const AnimateOnScroll = ({ children }) => {
+const ChevronIcon = ({ isOpen }) => <RiArrowDownSLine className={`accordion-chevron ${isOpen ? 'open' : ''}`} />;
+
+const LazySection = ({ children, height = '400px', rootMargin = '200px' }) => {
     const { ref, inView } = useInView({
         triggerOnce: true,
-        threshold: 0.1,
+        rootMargin,
     });
 
     return (
-        <div ref={ref} className={`fade-in-section ${inView ? 'is-visible' : ''}`}>
-            {children}
+        <div ref={ref} style={{ minHeight: inView ? 'auto' : height }}>
+            {inView ? (
+                <Suspense fallback={<div style={{ height }} />}>
+                    <div className="fade-in-section is-visible">
+                        {children}
+                    </div>
+                </Suspense>
+            ) : null}
         </div>
     );
 };
@@ -32,27 +40,25 @@ const Pocetna = () => {
     return (
         <div className="pocetna-wrapper">
             <main className="pocetna-page">
-                {/* HERO i MOTION komponente isključene iz AnimateOnScroll jer imaju napredan interni GSAP */}
                 <Hero navigate={navigate} />
-                <Motion navigate={navigate} />
 
-                <AnimateOnScroll>
+                {/* Motion is right after Hero, so start loading it early */}
+                <LazySection height="600px" rootMargin="200px">
+                    <Motion navigate={navigate} />
+                </LazySection>
+
+                <LazySection height="400px">
                     <Zid navigate={navigate} />
-                </AnimateOnScroll>
+                </LazySection>
 
-                {/* <AnimateOnScroll>
-                    <Features navigate={navigate} />
-                </AnimateOnScroll>
+                <LazySection height="400px">
+                    <Galerija navigate={navigate} />
+                </LazySection>
 
-                <AnimateOnScroll>
-                    <Testimonijal />
-                </AnimateOnScroll> */}
-
-                <AnimateOnScroll>
+                <LazySection height="400px">
                     <FAQ navigate={navigate} />
-                </AnimateOnScroll>
+                </LazySection>
             </main>
-            <Footer />
         </div>
     );
 };

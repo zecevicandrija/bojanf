@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    FiArrowLeft,
+    FiUserPlus,
+    FiUser,
+    FiMail,
+    FiLock,
+    FiShield,
+    FiCalendar,
+    FiBookOpen,
+    FiCheckCircle,
+    FiAlertCircle,
+    FiLoader
+} from 'react-icons/fi';
 import api from '../login/api';
-import './DodajKorisnika.css';
+import styles from './DodajKorisnika.module.css';
 
 const DodajKorisnika = () => {
     const navigate = useNavigate();
@@ -19,7 +33,6 @@ const DodajKorisnika = () => {
         kurs_id: '1',
     });
 
-    // Dohvati kurseve za dropdown
     useEffect(() => {
         const fetchKursevi = async () => {
             try {
@@ -56,7 +69,6 @@ const DodajKorisnika = () => {
         setIsSubmitting(true);
 
         try {
-            // 1. Kreiraj korisnika
             const korisnikResponse = await api.post('/api/korisnici', {
                 ime: form.ime,
                 prezime: form.prezime,
@@ -69,7 +81,6 @@ const DodajKorisnika = () => {
 
             const noviKorisnikId = korisnikResponse.data.userId;
 
-            // 2. Upiši kupovinu (poveži korisnika sa kursom)
             if (form.kurs_id) {
                 await api.post('/api/kupovina', {
                     korisnik_id: noviKorisnikId,
@@ -80,10 +91,9 @@ const DodajKorisnika = () => {
 
             setFeedback({
                 type: 'success',
-                message: `Korisnik "${form.ime} ${form.prezime}" uspešno dodat sa ID: ${noviKorisnikId} i upisan u kurs.`,
+                message: `Korisnik "${form.ime} ${form.prezime}" uspešno dodat i upisan u kurs.`,
             });
 
-            // Reset forme
             setForm({
                 ime: '',
                 prezime: '',
@@ -103,147 +113,156 @@ const DodajKorisnika = () => {
     };
 
     return (
-        <div className="dk-page">
-            <div className="dk-container">
-                <button className="dk-back-btn" onClick={() => navigate('/instruktor')}>
-                    <i className="ri-arrow-left-line"></i> Nazad
-                </button>
+        <div className={styles.dkPage}>
+            <div className={styles.noiseOverlay}></div>
+            <div className={styles.gridOverlay}></div>
 
-                <div className="dk-header">
-                    <div className="dk-header-icon">
-                        <i className="ri-user-add-line"></i>
-                    </div>
-                    <h1>Dodaj Korisnika</h1>
-                    <p>Ručno dodajte novog korisnika i dodelite mu pristup kursu.</p>
+            <div className={styles.dkContainer}>
+                <motion.button
+                    className={styles.dkBackBtn}
+                    onClick={() => navigate('/instruktor')}
+                    whileHover={{ x: -5 }}
+                >
+                    <FiArrowLeft /> NAZAD NA DASHBOARD
+                </motion.button>
+
+                <div className={styles.dkHeader}>
+                    <motion.div
+                        className={styles.dkHeaderIcon}
+                        initial={{ rotate: -10 }}
+                        animate={{ rotate: 0 }}
+                    >
+                        <FiUserPlus />
+                    </motion.div>
+                    <h1>Novi Korisnik</h1>
+                    <p>Brzo kreirajte nalog za novog studenta i dodelite mu pristup odabranom kursu.</p>
                 </div>
 
-                <form className="dk-form" onSubmit={handleSubmit}>
-                    <div className="dk-form-grid">
-                        {/* Ime */}
-                        <div className="dk-field">
-                            <label htmlFor="ime">
-                                <i className="ri-user-line"></i> Ime *
-                            </label>
-                            <input
-                                id="ime"
-                                name="ime"
-                                type="text"
-                                placeholder="Unesite ime"
-                                value={form.ime}
-                                onChange={handleChange}
-                                required
-                            />
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                >
+                    <form className={styles.dkForm} onSubmit={handleSubmit}>
+                        <div className={styles.dkFormGrid}>
+                            {/* Ime */}
+                            <div className={styles.dkField}>
+                                <label htmlFor="ime"><FiUser /> IME *</label>
+                                <input
+                                    id="ime"
+                                    name="ime"
+                                    type="text"
+                                    placeholder="Npr. Marko"
+                                    value={form.ime}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Prezime */}
+                            <div className={styles.dkField}>
+                                <label htmlFor="prezime"><FiUser /> PREZIME *</label>
+                                <input
+                                    id="prezime"
+                                    name="prezime"
+                                    type="text"
+                                    placeholder="Npr. Marković"
+                                    value={form.prezime}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Email */}
+                            <div className={`${styles.dkField} ${styles.dkFullWidth}`}>
+                                <label htmlFor="email"><FiMail /> EMAIL ADRESA *</label>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="student@example.com"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Šifra */}
+                            <div className={styles.dkField}>
+                                <label htmlFor="sifra"><FiLock /> PRIVREMENA ŠIFRA *</label>
+                                <input
+                                    id="sifra"
+                                    name="sifra"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={form.sifra}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Uloga */}
+                            <div className={styles.dkField}>
+                                <label htmlFor="uloga"><FiShield /> NIVO PRISTUPA</label>
+                                <select id="uloga" name="uloga" value={form.uloga} onChange={handleChange}>
+                                    <option value="korisnik">Korisnik (Student)</option>
+                                    <option value="instruktor">Instruktor</option>
+                                    <option value="admin">Administrator</option>
+                                </select>
+                            </div>
+
+                            {/* Pretplata */}
+                            <div className={styles.dkField}>
+                                <label htmlFor="subscription_expires_at"><FiCalendar /> PRISTUP DO *</label>
+                                <input
+                                    id="subscription_expires_at"
+                                    name="subscription_expires_at"
+                                    type="datetime-local"
+                                    value={form.subscription_expires_at}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            {/* Kurs */}
+                            <div className={styles.dkField}>
+                                <label htmlFor="kurs_id"><FiBookOpen /> DODELI KURS</label>
+                                <select id="kurs_id" name="kurs_id" value={form.kurs_id} onChange={handleChange}>
+                                    {kursevi.map(k => (
+                                        <option key={k.id} value={k.id}>{k.naziv}</option>
+                                    ))}
+                                    {kursevi.length === 0 && <option value="1">Motion Akademija</option>}
+                                </select>
+                            </div>
                         </div>
 
-                        {/* Prezime */}
-                        <div className="dk-field">
-                            <label htmlFor="prezime">
-                                <i className="ri-user-line"></i> Prezime *
-                            </label>
-                            <input
-                                id="prezime"
-                                name="prezime"
-                                type="text"
-                                placeholder="Unesite prezime"
-                                value={form.prezime}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                        <AnimatePresence>
+                            {feedback.message && (
+                                <motion.div
+                                    className={`${styles.dkFeedback} ${feedback.type === 'success' ? styles.success : styles.error}`}
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                >
+                                    {feedback.type === 'success' ? <FiCheckCircle /> : <FiAlertCircle />}
+                                    {feedback.message}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                        {/* Email */}
-                        <div className="dk-field dk-full-width">
-                            <label htmlFor="email">
-                                <i className="ri-mail-line"></i> Email *
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="korisnik@email.com"
-                                value={form.email}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        {/* Šifra */}
-                        <div className="dk-field">
-                            <label htmlFor="sifra">
-                                <i className="ri-lock-line"></i> Šifra *
-                            </label>
-                            <input
-                                id="sifra"
-                                name="sifra"
-                                type="password"
-                                placeholder="Unesite šifru"
-                                value={form.sifra}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        {/* Uloga */}
-                        <div className="dk-field">
-                            <label htmlFor="uloga">
-                                <i className="ri-shield-user-line"></i> Uloga
-                            </label>
-                            <select id="uloga" name="uloga" value={form.uloga} onChange={handleChange}>
-                                <option value="korisnik">Korisnik</option>
-                                <option value="instruktor">Instruktor</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        {/* Datum isteka pretplate */}
-                        <div className="dk-field">
-                            <label htmlFor="subscription_expires_at">
-                                <i className="ri-calendar-line"></i> Pretplata ističe *
-                            </label>
-                            <input
-                                id="subscription_expires_at"
-                                name="subscription_expires_at"
-                                type="datetime-local"
-                                value={form.subscription_expires_at}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        {/* Kurs */}
-                        <div className="dk-field">
-                            <label htmlFor="kurs_id">
-                                <i className="ri-book-open-line"></i> Kurs
-                            </label>
-                            <select id="kurs_id" name="kurs_id" value={form.kurs_id} onChange={handleChange}>
-                                {kursevi.map(k => (
-                                    <option key={k.id} value={k.id}>{k.naziv}</option>
-                                ))}
-                                {kursevi.length === 0 && <option value="1">Motion Akademija (ID: 1)</option>}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Feedback */}
-                    {feedback.message && (
-                        <div className={`dk-feedback ${feedback.type}`}>
-                            <i className={feedback.type === 'success' ? 'ri-check-line' : 'ri-error-warning-line'}></i>
-                            {feedback.message}
-                        </div>
-                    )}
-
-                    <button type="submit" className="dk-submit-btn" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                            <>
-                                <i className="ri-loader-4-line dk-spin"></i> Dodavanje...
-                            </>
-                        ) : (
-                            <>
-                                <i className="ri-user-add-line"></i> Dodaj Korisnika
-                            </>
-                        )}
-                    </button>
-                </form>
+                        <button type="submit" className={styles.dkSubmitBtn} disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <FiLoader className={styles.dkSpin} /> PROCESUIRANJE...
+                                </>
+                            ) : (
+                                <>
+                                    <FiUserPlus /> KREIRAJ KORISNIKA
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </motion.div>
             </div>
         </div>
     );

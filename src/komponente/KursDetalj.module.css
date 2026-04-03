@@ -1,0 +1,578 @@
+/* my-app/src/komponente/KursDetalj.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ===== Core Workstation Layout ===== */
+.workstationContainer {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: #0A0A0A;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  overflow: hidden;
+  /* Prevent body scroll, manage scroll internally */
+  padding-top: 100px;
+  /* Space for the navbar */
+}
+
+/* ===== Typography Utilities ===== */
+.sharpText {
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.monoText {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0;
+}
+
+/* ===== Sidebar (Syllabus) - 25% ===== */
+.sidebar {
+  flex: 0 0 25%;
+  min-width: 300px;
+  height: 100%;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Progress Indicator at the very top */
+.progressWrapper {
+  padding: 1.5rem 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 0.1em;
+}
+
+.progressBarTrack {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.progressBarFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #ff0033;
+  transition: width 0.3s ease;
+}
+
+/* Syllabus Sections */
+.syllabusContainer {
+  padding-top: 1rem;
+  padding-bottom: 8rem; /* Enough room for the last section to breathe */
+}
+
+.sectionHeader {
+  padding: 1rem 2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: color 0.2s;
+}
+
+.sectionHeader:hover {
+  color: #fff;
+}
+
+.lessonList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Lesson Item */
+.lessonItem {
+  position: relative;
+  padding: 0.75rem 2rem 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: #666;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.lessonItem:hover {
+  color: #aaa;
+}
+
+.lessonItemActive {
+  color: #fff;
+  font-weight: 500;
+}
+
+.activeIndicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 1em;
+  /* Only as tall as the text */
+  background-color: #ff0033;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.lessonItemActive .activeIndicator {
+  opacity: 1;
+}
+
+.lessonTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lessonIcon {
+  font-size: 1rem;
+  opacity: 0.5;
+}
+
+.lessonItemActive .lessonIcon {
+  opacity: 1;
+  color: #ff0033;
+  /* Maybe color the icon red when active */
+}
+
+.lessonMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lessonDuration {
+  color: #555;
+}
+
+.lessonItemActive .lessonDuration {
+  color: #888;
+}
+
+/* Checkbox (Minimalist) */
+.checkIcon {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.checkIconCompleted {
+  border-color: #ff0033;
+  background-color: rgba(255, 0, 51, 0.1);
+}
+
+.checkIconCompleted::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid #ff0033;
+  border-width: 0 1px 1px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+/* ===== Main Content (Video & Details) - 75% ===== */
+.mainContent {
+  flex: 0 0 75%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  overflow-y: auto;
+}
+
+.mainContent::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mainContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mainContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Top Header Bar */
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  /* Instead of a bottom border, we leave it clean or add a very faint one */
+  /* border-bottom: 1px solid rgba(255, 255, 255, 0.05); */
+}
+
+.moduleTitleInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.backBtn:hover {
+  color: #fff;
+}
+
+.moduleTitleText {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.moduleTitleText span {
+  color: #666;
+  margin-right: 8px;
+}
+
+.navigationControls {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navTextBtn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease;
+}
+
+.navTextBtn:hover:not(:disabled) {
+  color: #fff;
+}
+
+.navTextBtn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* Video Stage */
+.videoStage {
+  width: 100%;
+  background: #000;
+  /* Edge-to-edge meaning no padding, no border radius */
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  /* 16:9 Aspect Ratio */
+}
+
+.videoIframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+}
+
+.videoPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  font-size: 0.8rem;
+  background: #050505;
+}
+
+/* Additional Content Area below video */
+.contentArea {
+  padding: 3rem;
+  max-width: 1000px;
+}
+
+.contentTitle {
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  color: #fff;
+}
+
+.contentText {
+  color: #aaa;
+  font-weight: 300;
+  line-height: 1.8;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+.contentText a {
+  color: #ff0033;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 0, 51, 0.3);
+  transition: border-color 0.2s;
+}
+
+.contentText a:hover {
+  border-bottom-color: #ff0033;
+}
+
+/* States */
+.stateContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 4rem;
+  text-align: center;
+}
+
+.stateHeading {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+.stateSubText {
+  color: #888;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  max-width: 400px;
+}
+
+.ctaButton {
+  background-color: #ff0033;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 1rem 2.5rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  letter-spacing: 0.06em;
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 51, 0.2);
+}
+
+/* Editor Section */
+.editorSection {
+  margin-top: 3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 3rem;
+}
+
+.editorSection h3 {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 1.5rem;
+}
+
+.assignmentDesc {
+  color: #ccc;
+  margin-bottom: 2rem;
+}
+
+.codeBox {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #050505;
+}
+
+.codeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.codeHeader h4 {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0;
+}
+
+.codeSelect {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.codeActions {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btnHollow {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnHollow:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.aiFeedbackBox {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 0, 51, 0.05);
+  border-left: 2px solid #ff0033;
+}
+
+.aiFeedbackBox h4 {
+  color: #ff0033;
+  margin-top: 0;
+  font-size: 0.75rem;
+}
+
+.aiFeedbackBox pre {
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: #ccc;
+  white-space: pre-wrap;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .workstationContainer {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sidebar {
+    flex: none;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    order: 2;
+  }
+
+  .mainContent {
+    flex: none;
+    width: 100%;
+    order: 1;
+    overflow: visible;
+  }
+
+  .topBar {
+    padding: 1rem 1.5rem;
+  }
+}
+
+/* Visibility Helpers */
+.hideMobile {
+  display: flex;
+}
+
+.showMobileOnly {
+  display: none;
+}
+
+.mobileNavSpacer {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobileTitleWrapper {
+  padding: 1rem 1.5rem;
+  width: 100%;
+}
+
+.mobileTitle {
+  font-size: 0.85rem;
+  color: #fff;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .hideMobile {
+    display: none !important;
+  }
+  
+  .showMobileOnly {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .contentArea {
+    padding: 1.5rem;
+  }
+}

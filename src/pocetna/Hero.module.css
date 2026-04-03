@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700;800&family=Inter:wght@300;400;600&family=Outfit:wght@300;400;600&display=swap');
-
 /* ===== Section ===== */
 .heroSection {
   position: relative;
@@ -59,13 +57,62 @@
 }
 
 /* ===== Headline ===== */
+.educationBadge {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  padding: 6px 16px 6px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Clip path matching the site's geometric theme */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.educationBadge::before {
+  content: "MASTERCLASS";
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: #fff;
+  background: #ff0033;
+  padding: 2px 6px;
+  border-radius: 1px;
+  letter-spacing: 0.1em;
+}
+
+.badgeText {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+
+.badgeVersion {
+  color: #ff0033;
+  font-weight: 800;
+  margin-left: 8px;
+  background: rgba(255, 0, 51, 0.1);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 0.6rem;
+}
+
 .headlineWrapper {
   display: flex;
   flex-direction: column;
 }
 
 .solidText {
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(4rem, 9vw, 8rem);
   font-weight: 800;
   color: #fff;
@@ -76,7 +123,7 @@
 }
 
 .outlineText {
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(5rem, 12vw, 11rem);
   font-weight: 800;
   color: transparent;
@@ -170,7 +217,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.6rem;
   letter-spacing: 0.08em;
   justify-content: center;
@@ -269,7 +316,7 @@
 }
 
 .glassLabel {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.55rem;
   letter-spacing: 0.1em;
   color: #fff;
@@ -295,7 +342,7 @@
 }
 
 .scrollText {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.55rem;
   letter-spacing: 0.2em;
   color: #555;
@@ -309,7 +356,7 @@
   bottom: 2.5rem;
   left: 50%;
   transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.55rem;
   color: #333;
   letter-spacing: 0.12em;
@@ -335,6 +382,10 @@
 }
 
 @media (max-width: 768px) {
+  .educationBadge {
+    display: none;
+  }
+
   .solidText {
     font-size: clamp(3rem, 14vw, 5.5rem);
   }

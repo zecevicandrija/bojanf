@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700;800&family=Inter:wght@300;400;600&family=Outfit:wght@300;400;600&display=swap');
-
 /* =============================================
    MOTION SECTION — Premium Dark Mode, Brutalist
    ============================================= */
@@ -13,7 +11,6 @@
   position: relative;
   overflow: hidden;
   font-family: 'Outfit', sans-serif;
-
   transform: translateZ(0);
   backface-visibility: hidden;
   outline: 1px solid transparent;
@@ -61,7 +58,7 @@
 }
 
 .headlineMain {
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(4rem, 9vw, 8rem);
   font-weight: 800;
   color: #fff;
@@ -74,7 +71,7 @@
 }
 
 .headlineAccent {
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(5rem, 12vw, 11rem);
   font-weight: 800;
   color: transparent;
@@ -107,6 +104,7 @@
 .card {
   position: absolute;
   top: 0;
+  left: 0;
   width: 70vw;
   max-width: 850px;
   height: 100%;
@@ -116,7 +114,7 @@
   box-shadow: -30px 0 60px rgba(0, 0, 0, 0.8);
   overflow: hidden;
   pointer-events: auto;
-  will-change: transform;
+  will-change: transform, clip-path;
 }
 
 /* Background Texture / Image */
@@ -130,17 +128,26 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(70%) contrast(1.1) brightness(0.4);
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
 
+/* Desktop Hover - blago skaliranje, ali bez CSS filtera */
 .card:hover .cardBg img {
   transform: scale(1.05);
-  filter: grayscale(10%) contrast(1.1) brightness(0.65);
 }
 
-/* Deep overlay gradient */
+/* OVO JE NOVO: Hardverski ubrzan layer za zatamnjivanje slika umesto CSS filtera */
+.blackoutLayer {
+  position: absolute;
+  inset: 0;
+  background-color: #0A0A0A;
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Deep overlay gradient - ostaje za citljivost teksta odozdo */
 .cardOverlay {
   position: absolute;
   inset: 0;
@@ -148,13 +155,13 @@
       rgba(10, 10, 10, 0.98) 0%,
       rgba(10, 10, 10, 0.5) 55%,
       transparent 100%);
-  z-index: 1;
+  z-index: 2;
 }
 
 /* Card Content Container */
 .cardContent {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   width: 100%;
   height: 100%;
   padding: 6vw 5vw;
@@ -168,7 +175,7 @@
   position: absolute;
   top: 4vh;
   left: 5vw;
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(6rem, 15vw, 12rem);
   font-weight: 800;
   color: transparent;
@@ -179,7 +186,7 @@
 
 /* Editorial Title */
 .cardTitle {
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 800;
   color: #ffffff;
@@ -250,7 +257,7 @@
 }
 
 .closerTitle {
-  font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.5rem, 4vw, 3.5rem);
   font-weight: 800;
   color: #ffffff;
@@ -312,9 +319,7 @@
   .cardDesc {
     max-width: 70%;
   }
-}
 
-@media (max-width: 1100px) {
   .headlineMain {
     font-size: clamp(3.5rem, 10vw, 5.5rem);
   }
@@ -362,6 +367,8 @@
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 -30px 60px rgba(0, 0, 0, 0.9);
+    top: 0;
+    left: 0;
   }
 
   .cardOverlay {

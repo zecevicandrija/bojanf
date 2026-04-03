@@ -2,9 +2,10 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../login/auth';
 import { motion } from 'framer-motion';
+import { RiLineChartLine, RiAccountCircleLine } from 'react-icons/ri';
 import './Navbar.css';
 import { ThemeContext } from '../komponente/ThemeContext';
-import logo from '../images/logo.webp';
+import logo from '../images/bojanslike/novilogo.png'
 
 const Navbar = () => {
     const { user, loading } = useAuth();
@@ -81,10 +82,11 @@ const Navbar = () => {
                         {/* ===== Logo ===== */}
                         <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
                             <div className="logo-wrapper">
-                                <img src={logo} alt="Bojan Fashion Barbershop" className="logo" />
+                                <img src={logo} width="36" height="36" alt="Bojan Fashion Barbershop" className="logo" />
                             </div>
                             <div className="logo-text">
                                 <span className="logo-name">Bojan Fashion</span>
+                                <span className="mobile-only-badge">METOD 1.0</span>
                             </div>
                         </Link>
                     </div>
@@ -95,11 +97,6 @@ const Navbar = () => {
                             <li>
                                 <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
                                     Početna
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/kursevi" className={`nav-link ${isActive('/kursevi') ? 'active' : ''}`}>
-                                    Kursevi
                                 </Link>
                             </li>
                             <li>
@@ -137,11 +134,11 @@ const Navbar = () => {
                                 <>
                                     {(user.uloga === 'admin' || user.uloga === 'instruktor') && (
                                         <Link to="/instruktor" className="nav-icon-btn" title="Dashboard">
-                                            <i className="ri-line-chart-line"></i>
+                                            <RiLineChartLine />
                                         </Link>
                                     )}
                                     <Link to="/profil" className="nav-icon-btn" title="Profil">
-                                        <i className="ri-account-circle-line"></i>
+                                        <RiAccountCircleLine />
                                     </Link>
                                 </>
                             )}

@@ -2,50 +2,27 @@ import React from 'react';
 import { RiScissorsLine } from 'react-icons/ri';
 import styles from './Zid.module.css';
 
+import slika1 from '../images/bojanslike/slika1.webp';
+import slika2 from '../images/bojanslike/slika2.webp';
+import slika3 from '../images/bojanslike/slika3.webp';
+import slika4 from '../images/bojanslike/slika4.webp';
+import slika5 from '../images/bojanslike/slika5.webp';
+import slika6 from '../images/bojanslike/slika6.webp';
+import slika7 from '../images/bojanslike/slika7.webp';
+import slika8 from '../images/bojanslike/slika8.webp';
+import slika12 from '../images/bojanslike/slika12.webp';
+import slika14 from '../images/bojanslike/slika14.webp';
+
 const results = [
-    {
-        id: 1,
-        type: 'large',
-        name: 'Stefan',
-        salon: 'Top Hair Studio',
-        img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1200&auto=format&fit=crop'
-    },
-    {
-        id: 2,
-        type: 'tall',
-        name: 'Marko',
-        salon: 'Barber Cartel',
-        img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-        id: 3,
-        type: 'small',
-        name: 'Nikola',
-        salon: 'Premium Rez',
-        img: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-        id: 4,
-        type: 'small',
-        name: 'Filip',
-        salon: 'Postao najbolji u gradu',
-        img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-        id: 5,
-        type: 'beforeAfter',
-        name: 'Nemanja',
-        salon: 'Sada naplaćuje 3000 RSD',
-        imgBefore: 'https://images.unsplash.com/photo-1593702275687-f8b402bf1fb5?q=80&w=1000&auto=format&fit=crop',
-        imgAfter: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=1000&auto=format&fit=crop'
-    },
-    {
-        id: 6,
-        type: 'wide',
-        name: 'Aleksandar',
-        salon: 'Vlasnik salona',
-        img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1000&auto=format&fit=crop'
-    }
+    { id: 1, type: 'large', img: slika3 },
+    { id: 2, type: 'small', img: slika4 },
+    { id: 3, type: 'small', img: slika5 },
+    { id: 4, type: 'wide', img: slika14 },
+    { id: 5, type: 'tall', img: slika7 },
+    { id: 6, type: 'wide', img: slika6 },
+    { id: 7, type: 'small', img: slika8 },
+    { id: 8, type: 'small', img: slika12 },
+    { id: 9, type: 'cta' }
 ];
 
 const Zid = ({ navigate }) => {
@@ -57,60 +34,40 @@ const Zid = ({ navigate }) => {
 
             <div className={styles.container}>
                 <div className={styles.headlineGroup}>
-                    <h2 className={styles.headlineMain}>NJIHOVA CENA JE</h2>
-                    <h2 className={styles.headlineAccent}>SADA DUPLA<span className={styles.desktopDot}>.</span></h2>
+                    <h2 className={styles.headlineMain}>VIŠE OD</h2>
+                    <h2 className={styles.headlineAccent}>EDUKACIJE<span className={styles.desktopDot}>.</span></h2>
                     <p className={styles.description}>
-                        Ovo nisu naši radovi. Ovo su stvarni rezultati polaznika nakon završene Akademije. Ne prodajemo ti samo sertifikat, već znanje koje od sutra možeš da naplatiš više.
+                        Akademija nije samo učenje, to je mesto gde pronalaziš ljude koji razmišljaju kao ti. Ovde delimo znanje, greške i uspehe. Postani deo zajednice koja te gura napred i gde se svaki napredak slavi zajedno.
                     </p>
                 </div>
 
                 <div className={styles.grid}>
                     {results.map((item) => {
-                        let cardClass = styles.cardSmall;
-                        if (item.type === 'large') cardClass = styles.cardLarge;
-                        if (item.type === 'wide') cardClass = styles.cardWide;
-                        if (item.type === 'tall') cardClass = styles.cardTall;
-                        if (item.type === 'beforeAfter') cardClass = `${styles.cardWide} ${styles.beforeAfter}`;
-
-                        if (item.type === 'beforeAfter') {
+                        if (item.type === 'cta') {
                             return (
-                                <div key={item.id} className={`${styles.card} ${cardClass}`}>
-                                    <img src={item.imgBefore} alt="Priprema" className={styles.imgBefore} />
-                                    <img src={item.imgAfter} alt="Savršeni Rez" className={styles.imgAfter} />
-
-                                    <div className={styles.overlay}>
-                                        <div className={styles.overlayContent}>
-                                            <h4 className={styles.name}>{item.name}</h4>
-                                            <p className={styles.details}>{item.salon}</p>
-                                        </div>
-                                    </div>
+                                <div key={item.id} className={`${styles.card} ${styles.cardWide} ${styles.ctaCard}`}>
+                                    <button
+                                        className={styles.ctaPrimary}
+                                        onClick={() => navigate && navigate('/kursevi')}
+                                    >
+                                        <span>PRIDRUŽI SE</span>
+                                        <RiScissorsLine className={styles.ctaIcon} />
+                                    </button>
                                 </div>
                             );
                         }
 
+                        let cardClass = styles.cardSmall;
+                        if (item.type === 'large') cardClass = styles.cardLarge;
+                        if (item.type === 'wide') cardClass = styles.cardWide;
+                        if (item.type === 'tall') cardClass = styles.cardTall;
+
                         return (
                             <div key={item.id} className={`${styles.card} ${cardClass}`}>
-                                <img src={item.img} alt={item.name} />
-
-                                <div className={styles.overlay}>
-                                    <div className={styles.overlayContent}>
-                                        <h4 className={styles.name}>{item.name}</h4>
-                                        <p className={styles.details}>{item.salon}</p>
-                                    </div>
-                                </div>
+                                <img src={item.img} loading="lazy" alt={`Result ${item.id}`} />
                             </div>
                         );
                     })}
-                </div>
-
-                <div className={styles.ctaContainer}>
-                    <button
-                        className={styles.ctaPrimary}
-                        onClick={() => navigate && navigate('/kursevi')}
-                    >
-                        <span>ŽELIM OVAKVE REZULTATE</span>
-                        <RiScissorsLine className={styles.ctaIcon} />
-                    </button>
                 </div>
             </div>
         </section>

@@ -21,7 +21,7 @@
     "framer-motion": "^12.23.25",
     "gsap": "^3.14.2",
     "hls.js": "^1.6.7",
-    "mdb-react-ui-kit": "^8.0.0",
+    "lucide-react": "^1.7.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.11.0",
     "nodemon": "^3.1.4",
@@ -36,7 +36,6 @@
     "react-router-dom": "^6.26.1",
     "react-scripts": "5.0.1",
     "react-stars": "^2.2.5",
-    "remixicon": "^4.3.0",
     "tus-js-client": "^4.3.1",
     "web-vitals": "^2.1.4"
   },

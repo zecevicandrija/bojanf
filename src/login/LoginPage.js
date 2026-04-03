@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiArrowRight, FiAlertCircle } from 'react-icons/fi';
 import './LoginPage.css'
 
-import animatedbanner from '../images/0731banrer.gif';
-
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [sifra, setSifra] = useState('');
@@ -32,87 +30,69 @@ const LoginPage = () => {
 
     return (
         <div className="lpage-wrapper">
+            <div className="noise-overlay"></div>
+            <div className="grid-overlay"></div>
+
             <motion.div
                 className="lpage-container"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
             >
-                {/* Glow Effect */}
-                <div className="lpage-glow" />
-
-                {/* Banner */}
-                <motion.div
-                    className="lpage-banner-wrapper"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
-                >
-                    <img src={animatedbanner} alt="Motion Akademija" className="lpage-banner" />
-                    <div className="lpage-banner-overlay" />
-                </motion.div>
-
-                {/* Header */}
-                <motion.div
-                    className="lpage-header"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                    <h1 className="lpage-title">
-                        Dobro <span className="lpage-gradient-text">došli</span>
-                    </h1>
-                    <p className="lpage-subtitle">
-                        Uđite u svet video editinga
-                    </p>
-                </motion.div>
+                {/* Header matches Hero style */}
+                <div className="lpage-header">
+                    <motion.div 
+                        className="lpage-badge"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <span className="badge-text">STUDENTSKI PORTAL <span className="badge-version">1.0</span></span>
+                    </motion.div>
+                    
+                    <motion.div 
+                        className="headline-wrapper"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <span className="solid-text">NASTAVI</span>
+                        <span className="outline-text">UČENJE</span>
+                    </motion.div>
+                    
+                    <p className="lpage-subtitle">Dobrodošli nazad u Bojan Fashion Akademiju.</p>
+                </div>
 
                 {/* Form */}
-                <motion.form
-                    onSubmit={handleSubmit}
-                    className="lpage-form"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
-                >
+                <form onSubmit={handleSubmit} className="lpage-form">
                     <div className="lpage-input-group">
-                        <label htmlFor="email" className="lpage-label">
-                            <FiMail className="lpage-label-icon" />
-                            Email Adresa
+                        <label htmlFor="email">
+                            <FiMail /> EMAIL ADRESA
                         </label>
-                        <div className="lpage-input-wrapper">
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                className="lpage-input"
-                                placeholder="vas@email.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <div className="lpage-input-focus-line" />
-                        </div>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="vas@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
                     </div>
 
                     <div className="lpage-input-group">
-                        <label htmlFor="password" className="lpage-label">
-                            <FiLock className="lpage-label-icon" />
-                            Lozinka
+                        <label htmlFor="password">
+                            <FiLock /> LOZINKA
                         </label>
-                        <div className="lpage-input-wrapper">
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                className="lpage-input"
-                                placeholder="••••••••"
-                                value={sifra}
-                                onChange={(e) => setSifra(e.target.value)}
-                                required
-                            />
-                            <div className="lpage-input-focus-line" />
-                        </div>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={sifra}
+                            onChange={(e) => setSifra(e.target.value)}
+                            required
+                        />
                     </div>
 
                     <motion.button
@@ -122,19 +102,15 @@ const LoginPage = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
-                        <span>{isLoading ? 'Prijava...' : 'Prijavi se'}</span>
-                        <FiArrowRight className="lpage-btn-icon" />
-                        <div className="lpage-btn-shine" />
+                        <span>{isLoading ? 'PRIJAVA U TOKU...' : 'PRISTUPI PORTALU'}</span>
+                        <FiArrowRight />
+                        <div className="btn-shine" />
                     </motion.button>
-                </motion.form>
+                </form>
 
-                {/* Bottom Accent */}
-                <motion.div
-                    className="lpage-bottom-accent"
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ delay: 0.8, duration: 0.6 }}
-                />
+                <div className="lpage-footer">
+                    <p>Zaboravili ste lozinku? Kontaktirajte podršku.</p>
+                </div>
             </motion.div>
 
             {/* Error Modal */}
@@ -144,24 +120,20 @@ const LoginPage = () => {
                     onClick={closeModal}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
                 >
                     <motion.div
                         className="lpage-modal-content"
                         onClick={(e) => e.stopPropagation()}
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.3 }}
                     >
                         <div className="lpage-modal-icon-box">
-                            <FiAlertCircle className="lpage-modal-icon" />
+                            <FiAlertCircle />
                         </div>
-                        <h3 className="lpage-modal-title">Greška pri prijavi</h3>
-                        <p className="lpage-modal-text">
-                            Podaci za prijavu nisu ispravni. Molimo Vas da proverite email i lozinku.
-                        </p>
+                        <h3>GREŠKA PRI PRIJAVI</h3>
+                        <p>Podaci nisu ispravni. Proverite email i lozinku.</p>
                         <button onClick={closeModal} className="lpage-modal-btn">
-                            Pokušaj ponovo
+                            POKUŠAJ PONOVO
                         </button>
                     </motion.div>
                 </motion.div>

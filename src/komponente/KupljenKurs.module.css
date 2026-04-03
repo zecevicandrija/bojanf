@@ -1,0 +1,284 @@
+/* ===== Osnova Komponente ===== */
+.sectionWrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0A0A0A;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    padding-bottom: 10vh;
+}
+
+/* ===== Background layers (kao u Hero) ===== */
+.noiseOverlay {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 550 550' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.gridOverlay {
+    position: absolute;
+    inset: 0;
+    background-size: 60px 60px;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===== Arhitektura Zaglavlja (The Command Center) ===== */
+.commandCenter {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    padding: 12vh 6vw 0 6vw;
+}
+
+.headerFlex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.mainTitle {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    margin: 0;
+    line-height: 0.9;
+}
+
+.titleGroup {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.metaData {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.metaItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.metaLabel {
+    font-size: 0.65rem;
+    color: #525252;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+}
+
+.metaValue {
+    font-family: monospace;
+    font-size: 1.1rem;
+    color: #fff;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.statusActive {
+    color: #ff0033;
+}
+
+.metaDivider {
+    width: 1px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.separatorLine {
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== Vertikalni Grid Sistem (The Skeleton) ===== */
+.verticalGrid {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    padding: 8rem 6vw 5rem 6vw;
+    /* Increased top padding from 5rem to 8rem */
+    display: grid;
+    /* Masterclass / Brutalist spacing - massive prazan prostor */
+    gap: 10vh 4vw;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+    .verticalGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .verticalGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1536px) {
+    .verticalGrid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* ===== Dizajn Kartice (Anti-Card) ===== */
+.antiCardGroup {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    height: 100%;
+    /* Ensure card fills the grid cell height */
+    /* Group logika prenesena na samu karticu - sve efekte vucemo odavde na osnovu .antiCardGroup:hover */
+}
+
+/* Thumbnail */
+.imageContainer {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    /* Strogo definisan format */
+    overflow: hidden;
+    margin-bottom: 2rem;
+    /* Increased from 1.5rem to 2rem */
+    background: #111;
+    /* fallback dok se ucitava slika */
+}
+
+.thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) opacity(0.8);
+    transform: scale(1);
+    /* native CSS smooth tranzicije - hardverski akcelerisane */
+    transition: transform 500ms ease-out, filter 500ms ease-out, opacity 500ms ease-out;
+    will-change: transform, filter, opacity;
+}
+
+/* Mikro-interakcija slike na hover .antiCardGroup-e */
+.antiCardGroup:hover .thumbnail {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.05);
+    /* Suptilan zoom */
+}
+
+/* Metapodaci i Tekst */
+.cardInfo {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    /* Allow content to grow and fill available space */
+}
+
+.microMeta {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #888;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+}
+
+.lessonTitle {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.05;
+    /* Tightened from 1.2 for a more compact 'block' look */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+    transition: color 300ms ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hoverArrow {
+    color: #ff0033;
+    /* Neon crvena strelica */
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 400ms ease;
+}
+
+/* Mikro-interakcija naslova na hover .antiCardGroup-e */
+.antiCardGroup:hover .lessonTitle {
+    color: #d1d1d1;
+    /* Blago posvetljenje/posivljenje teksta iz cisto bele */
+}
+
+.antiCardGroup:hover .hoverArrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Progress Tanki Bar */
+.progressSection {
+    margin-top: auto;
+    /* gura na dno ako se content razlikuje u visini */
+    padding-top: 1rem;
+}
+
+.progressBarBg {
+    width: 100%;
+    height: 1px;
+    /* Masivan minimalizam -> 1px linija */
+    background: rgba(255, 255, 255, 0.1);
+    /* Bela sa 10% opacity */
+}
+
+.progressBarFill {
+    height: 100%;
+    background: #ff0033;
+    transition: width 0.8s ease-out;
+    box-shadow: 0 0 5px rgba(255, 0, 51, 0.5);
+    /* Jako blagi sjaj */
+}
+
+/* ===== Stanje kada nema kurseva/sekcija ===== */
+.emptyState {
+    width: 100%;
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+    position: relative;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #888;
+    font-size: 1.2rem;
+}
+
+/* Specific styling for header mobile fixes */
+@media (max-width: 768px) {
+    .headerFlex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .metaData {
+        font-size: 0.75rem;
+    }
+}

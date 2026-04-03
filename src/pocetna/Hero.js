@@ -1,10 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from './Hero.module.css';
-import heroImg from '../images/bojan2.png';
 
-gsap.registerPlugin(ScrollTrigger);
+const HERO_IMG = process.env.PUBLIC_URL + '/bojan2.webp';
 
 const Hero = () => {
     const heroRef = useRef(null);
@@ -12,58 +9,47 @@ const Hero = () => {
     const imageRef = useRef(null);
 
     useEffect(() => {
-        let ctx = gsap.context(() => {
-            // Intro animacije (Staggered fade-in na onload)
-            gsap.fromTo('.intro-item', {
-                y: 50,
-                opacity: 0
-            }, {
-                y: 0,
-                opacity: 1,
-                duration: 1,
-                stagger: 0.15,
-                ease: 'power3.out',
-                delay: 0.1
-            });
+        // Dinamički import za GSAP - ne učitava se dok React ne završi render
+        const initAnims = async () => {
+            // Odlaganje GSAP-a da se omogući browseru da prvo iscrta LCP sliku (500ms za spore telefone)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const { gsap } = await import('gsap');
+            const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+            gsap.registerPlugin(ScrollTrigger);
 
-            // Scroll animacija (Parallax i Fade out za tekst kako se skroluje nizbrdo)
-            gsap.to(contentRef.current, {
-                scrollTrigger: {
-                    trigger: heroRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: 1,
-                },
-                y: 150,
-                opacity: 0,
-                ease: 'none'
-            });
+            let ctx = gsap.context(() => {
+                // Intro animacije
+                gsap.fromTo('.intro-item', 
+                    { y: 50, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 1, stagger: 0.15, ease: 'power3.out', delay: 0.1 }
+                );
+                
+                // Scroll animacije - samo ako imamo refove
+                if (contentRef.current && heroRef.current) {
+                    gsap.to(contentRef.current, { 
+                        scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: 1 }, 
+                        y: 150, opacity: 0, ease: 'none' 
+                    });
+                }
+                
+                if (imageRef.current && heroRef.current) {
+                    gsap.to(imageRef.current, { 
+                        scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: 1 }, 
+                        y: -100, ease: 'none' 
+                    });
+                }
 
-            // Parallax efekat za sliku (ide blago prema gore)
-            gsap.to(imageRef.current, {
-                scrollTrigger: {
-                    trigger: heroRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: 1,
-                },
-                y: -100,
-                ease: 'none'
-            });
+                gsap.to('.floating-card', { y: -15, rotation: 2, duration: 3, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+            }, heroRef);
 
-            // Plutajuci hover na "glass card" bedz po uzoru na framer floating card
-            gsap.to('.floating-card', {
-                y: -15,
-                rotation: 2,
-                duration: 3,
-                yoyo: true,
-                repeat: -1,
-                ease: 'sine.inOut'
-            });
+            return ctx;
+        };
 
-        }, heroRef);
+        const animPromise = initAnims();
 
-        return () => ctx.revert();
+        return () => {
+            animPromise.then(ctx => ctx && ctx.revert());
+        };
     }, []);
 
     return (
@@ -74,30 +60,31 @@ const Hero = () => {
 
             {/* Main layout */}
             <div className={styles.container}>
-
                 {/* Left column */}
                 <div className={styles.content} ref={contentRef}>
-                    <div className={`${styles.headlineWrapper} intro-item`}>
+                    <div className={`${styles.educationBadge} intro-item`} style={{opacity: 0}}>
+                        <span className={styles.badgeText}>
+                            Bojan Fashion Metod <span className={styles.badgeVersion}>1.0</span>
+                        </span>
+                    </div>
+                    <div className={`${styles.headlineWrapper} intro-item`} style={{opacity: 0}}>
                         <span className={styles.solidText}>VRHUNSKI</span>
                         <span className={styles.outlineText}>BARBER</span>
                     </div>
 
-                    {/* Sub-headline bridge */}
-                    <p className={`${styles.subHeadline} intro-item`}>
+                    <p className={`${styles.subHeadline} intro-item`} style={{opacity: 0}}>
                         Edukacija dizajnirana za početnike i profesionalce. Savladaj moderne
                         tehnike fade-a uz ekspertsko mentorstvo i podigni svoj biznis na viši nivo.
                     </p>
 
-                    {/* CTA row */}
-                    <div className={`${styles.actionWrapper} intro-item`}>
+                    <div className={`${styles.actionWrapper} intro-item`} style={{opacity: 0}}>
                         <button className={styles.ctaButton}>Apliciraj za kurs</button>
 
-                        {/* Social proof */}
                         <div className={styles.socialProof}>
                             <div className={styles.avatarStack}>
-                                <img src="https://i.pravatar.cc/100?img=33" alt="Student" className={styles.avatar} />
-                                <img src="https://i.pravatar.cc/100?img=47" alt="Student" className={styles.avatar} />
-                                <img src="https://i.pravatar.cc/100?img=12" alt="Student" className={styles.avatar} />
+                                <img src="https://i.pravatar.cc/100?img=33" width="40" height="40" alt="Student" className={styles.avatar} />
+                                <img src="https://i.pravatar.cc/100?img=47" width="40" height="40" alt="Student" className={styles.avatar} />
+                                <img src="https://i.pravatar.cc/100?img=12" width="40" height="40" alt="Student" className={styles.avatar} />
                             </div>
                             <div className={styles.proofText}>
                                 <span className={styles.proofRating}>
@@ -109,30 +96,34 @@ const Hero = () => {
                     </div>
                 </div>
 
-                {/* Right column – Bojan */}
+                {/* Right column – Bojan - BEZ intro-item da se LCP slika odmah vidi */}
                 <div className={styles.imageContainer} ref={imageRef}>
-                    {/* Radial Rim Lighting Behind Subject */}
-                    <div className={`${styles.backlightGlow} intro-item`}></div>
+                    <div className={styles.backlightGlow}></div>
 
-                    <div className={`${styles.imageMask} intro-item`}>
-                        <img src={heroImg} alt="Bojan — Barber Masterclass" className={styles.heroImage} />
+                    <div className={styles.imageMask}>
+                        <img
+                            src={HERO_IMG}
+                            alt="Bojan — Barber Masterclass"
+                            className={styles.heroImage}
+                            fetchpriority="high"
+                            decoding="async"
+                            width="800"
+                            height="1000"
+                        />
                     </div>
 
-                    {/* Glassmorphism badge */}
-                    <div className={`${styles.glassCard} intro-item floating-card`}>
+                    <div className={`${styles.glassCard} intro-item floating-card`} style={{opacity: 0}}>
                         <span className={styles.glassIcon}>🎓</span>
                         <span className={styles.glassLabel}>INTERNACIONALNO PRIZNAT SERTIFIKAT</span>
                     </div>
                 </div>
 
-                {/* Bottom-left scroll indicator */}
-                <div className={`${styles.scrollIndicator} intro-item`}>
+                <div className={`${styles.scrollIndicator} intro-item`} style={{opacity: 0}}>
                     <div className={styles.scrollLine}></div>
                     <span className={styles.scrollText}>SCROLL TO EXPLORE</span>
                 </div>
 
-                {/* Bottom-left trust line */}
-                <div className={`${styles.trustedBlock} intro-item`}>
+                <div className={`${styles.trustedBlock} intro-item`} style={{opacity: 0}}>
                     TRUSTED BY 500+ MASTERS&nbsp;&nbsp;//&nbsp;&nbsp;BALKANS' #1 ACADEMY
                 </div>
             </div>

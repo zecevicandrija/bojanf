@@ -1,13 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "./api";
-import {
-  MDBModal,
-  MDBModalHeader,
-  MDBModalBody,
-  MDBModalFooter,
-  MDBBtn,
-} from "mdb-react-ui-kit";
 
 const AuthContext = React.createContext();
 
@@ -106,9 +99,30 @@ export const AuthProvider = ({ children }) => {
       <AuthContext.Provider value={value}>
         {!loading && children}
       </AuthContext.Provider>
-      <MDBModal show={showModal} tabIndex="-1" centered>
-        {/* ... ostatak modala ... */}
-      </MDBModal>
+      {showModal && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+          backdropFilter: 'blur(10px)', color: '#fff', padding: '20px'
+        }}>
+          <div style={{
+            background: '#111', padding: '30px', borderRadius: '14px', maxWidth: '400px',
+            width: '100%', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center'
+          }}>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem' }}>Proruka</h3>
+            <p style={{ opacity: 0.8, fontSize: '0.9rem', marginBottom: '25px' }}>{modalMessage}</p>
+            <button
+              onClick={closeModal}
+              style={{
+                background: '#ff0033', color: '#fff', border: 'none', padding: '12px 30px',
+                borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'
+              }}
+            >
+              U redu
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as tus from 'tus-js-client';
+import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiArrowUp, FiArrowDown, FiX, FiSave } from 'react-icons/fi';
 import api from '../login/api';
 import './EditKursa.css';
 
@@ -240,138 +241,222 @@ const EditKursa = () => {
         }
     };
 
-    if (isLoading) return <div className="edit-kurs-container"><h2>Učitavanje...</h2></div>;
+    if (isLoading) {
+        return (
+            <div className="ek-loader-container">
+                <div className="ek-spinner"></div> UČITAVANJE KURSA...
+            </div>
+        );
+    }
 
     return (
-        <div className="edit-kurs-container">
-            <button onClick={() => navigate('/instruktor')} className="back-button">Nazad na Tablu</button>
-            <h1>Uređivanje Kursa: {course?.naziv}</h1>
+        <div className="ek-full-page-container">
+            <div className="ek-noise-overlay"></div>
+            <div className="ek-grid-overlay"></div>
 
-            <div className="management-panel">
-                <h2>Upravljanje Sekcijama</h2>
-                {isOrderChanged && (
-                    <button onClick={handleSaveOrder} className="save-order-btn">Sačuvaj novi redosled</button>
-                )}
-                <div className="sekcije-list">
-                    {sekcije.map((sekcija, index) => (
-                        <div key={sekcija.id} className="sekcija-card-edit">
-                            {editingSekcijaId === sekcija.id ? (
-                                <div className="edit-sekcija-form">
-                                    <label>Naziv sekcije:</label>
-                                    <input
-                                        type="text"
-                                        value={noviNazivSekcije}
-                                        onChange={(e) => setNoviNazivSekcije(e.target.value)}
-                                        className="sekcija-edit-input"
-                                    />
-                                    <label>URL slike (thumbnail):</label>
-                                    <input
-                                        type="text"
-                                        placeholder="https://primer.com/slika.png"
-                                        value={noviThumbnailUrl}
-                                        onChange={(e) => setNoviThumbnailUrl(e.target.value)}
-                                        className="sekcija-edit-input"
-                                    />
-                                </div>
-                            ) : (
-                                <h4>{sekcija.redosled}. {sekcija.naziv}</h4>
+            <div className="ek-inner">
+                {/* Header Section */}
+                <div className="ek-top-nav">
+                    <button onClick={() => navigate('/instruktor')} className="ek-back-btn">
+                        <FiArrowLeft /> NAZAD NA TABLU
+                    </button>
+                    <div className="ek-page-title-box">
+                        <span className="ek-badge">CONTROL PANEL</span>
+                        <h1 className="ek-main-title">UREĐIVANJE: {course?.naziv}</h1>
+                    </div>
+                </div>
+
+                <div className="ek-grid">
+                    {/* Panel za Sekcije */}
+                    <div className="ek-glass-panel">
+                        <div className="ek-section-header">
+                            <h2 className="ek-section-title">UPRAVLJANJE SEKCIJAMA</h2>
+                            {isOrderChanged && (
+                                <button onClick={handleSaveOrder} className="ek-primary-btn" style={{backgroundColor: '#00ff66', color: '#000'}}>
+                                    <FiSave /> SAČUVAJ REDOSLED
+                                </button>
                             )}
-                            <div className="sekcija-actions">
-                                {editingSekcijaId === sekcija.id ? (
-                                    <>
-                                        <button onClick={() => handleSaveSekcija(sekcija.id)} className="action-btn save-btn">Sačuvaj</button>
-                                        <button onClick={() => setEditingSekcijaId(null)} className="action-btn cancel-btn">Odustani</button>
-                                    </>
-                                ) : (
-                                    <button onClick={() => handleEditSekcijaClick(sekcija)} className="action-btn edit-btn">Izmeni</button>
-                                )}
-                                <button onClick={() => handleDeleteSekcija(sekcija.id)} className="action-btn delete-btn">Obriši</button>
-                                <div className="order-controls">
-                                    <button onClick={() => handleMoveSekcija(index, -1)} disabled={index === 0} className="arrow-btn">▲</button>
-                                    <button onClick={() => handleMoveSekcija(index, 1)} disabled={index === sekcije.length - 1} className="arrow-btn">▼</button>
-                                </div>
-                            </div>
                         </div>
-                    ))}
-                </div>
 
-                <div className="add-sekcija-panel">
-                    {isAddingSekcija ? (
-                        <form onSubmit={handleAddNewSekcija} className="add-sekcija-form">
-                            <input
-                                type="text"
-                                placeholder="Unesite naziv nove sekcije"
-                                value={novaSekcijaNaziv}
-                                onChange={(e) => setNovaSekcijaNaziv(e.target.value)}
-                                className="sekcija-add-input"
-                                autoFocus
-                            />
-                            <input
-                                type="text"
-                                placeholder="URL slike (opciono)"
-                                value={novaSekcijaThumbnailUrl}
-                                onChange={(e) => setNovaSekcijaThumbnailUrl(e.target.value)}
-                                className="sekcija-add-input"
-                            />
-                            <div className='dugmici'>
-                                <button type="submit" className="action-btn save-btn">Dodaj</button>
-                                <button type="button" onClick={() => setIsAddingSekcija(false)} className="action-btn cancel-btn">Odustani</button>
-                            </div>
-                        </form>
-                    ) : (
-                        <button onClick={() => setIsAddingSekcija(true)} className="add-sekcija-btn">
-                            + Dodaj Novu Sekciju
-                        </button>
-                    )}
-                </div>
-            </div>
+                        <div className="ek-list-container">
+                            {sekcije.map((sekcija, index) => (
+                                <div key={sekcija.id} className="ek-item-card">
+                                    {editingSekcijaId === sekcija.id ? (
+                                        <div className="ek-inline-form">
+                                            <div className="ek-input-group">
+                                                <label>Naziv sekcije</label>
+                                                <input
+                                                    type="text"
+                                                    value={noviNazivSekcije}
+                                                    onChange={(e) => setNoviNazivSekcije(e.target.value)}
+                                                    className="ek-input"
+                                                />
+                                            </div>
+                                            <div className="ek-input-group">
+                                                <label>URL slike (Thumbnail)</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="https://..."
+                                                    value={noviThumbnailUrl}
+                                                    onChange={(e) => setNoviThumbnailUrl(e.target.value)}
+                                                    className="ek-input"
+                                                />
+                                            </div>
+                                            <div className="ek-inline-actions">
+                                                <button onClick={() => handleSaveSekcija(sekcija.id)} className="ek-primary-btn" style={{padding: '12px'}} title="Sačuvaj">
+                                                    <FiSave />
+                                                </button>
+                                                <button onClick={() => setEditingSekcijaId(null)} className="ek-secondary-btn" style={{padding: '12px'}} title="Odustani">
+                                                    <FiX />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="ek-order-controls">
+                                                <button onClick={() => handleMoveSekcija(index, -1)} disabled={index === 0} className="ek-icon-btn">
+                                                    <FiArrowUp />
+                                                </button>
+                                                <button onClick={() => handleMoveSekcija(index, 1)} disabled={index === sekcije.length - 1} className="ek-icon-btn">
+                                                    <FiArrowDown />
+                                                </button>
+                                            </div>
+                                            <div className="ek-item-info">
+                                                <h4 className="ek-item-title">{sekcija.redosled}. {sekcija.naziv}</h4>
+                                                <p className="ek-item-meta">{sekcija.thumbnail ? 'Sadrži slikovni thumbnail' : 'Nema thumbnail'}</p>
+                                            </div>
+                                            <div className="ek-item-actions">
+                                                <button onClick={() => handleEditSekcijaClick(sekcija)} className="ek-secondary-btn">
+                                                    <FiEdit2 /> IZMENI
+                                                </button>
+                                                <button onClick={() => handleDeleteSekcija(sekcija.id)} className="ek-danger-btn">
+                                                    <FiTrash2 /> OBRIŠI
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
 
-            <hr className="separator" />
-
-            <h2>Uređivanje Lekcija</h2>
-            <div className="lessons-grid">
-                {lessons.map(lesson => (
-                    <div className="lesson-card-edit" key={lesson.id}>
-                        <h4>{lesson.title}</h4>
-                        <p>Sekcija: {sekcije.find(s => s.id === lesson.sekcija_id)?.naziv || 'Nije dodeljena'}</p>
-                        <p>{lesson.content.substring(0, 100)}...</p>
-                        <div className="lesson-actions">
-                            <button onClick={() => handleOpenEditModal(lesson)} className="edit-btn">Izmeni</button>
-                            <button onClick={() => handleDeleteLesson(lesson.id)} className="delete-btn">Obriši</button>
+                            {/* Dodavanje nove sekcije */}
+                            {isAddingSekcija ? (
+                                <form onSubmit={handleAddNewSekcija} className="ek-item-card" style={{borderLeftColor: '#ff0033'}}>
+                                    <div className="ek-inline-form" style={{marginRight: 0}}>
+                                         <div className="ek-input-group">
+                                            <label>Nova Sekcija</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Unesite naziv..."
+                                                value={novaSekcijaNaziv}
+                                                onChange={(e) => setNovaSekcijaNaziv(e.target.value)}
+                                                className="ek-input"
+                                                autoFocus
+                                            />
+                                        </div>
+                                        <div className="ek-input-group">
+                                            <label>Slika (Opciono)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="https://..."
+                                                value={novaSekcijaThumbnailUrl}
+                                                onChange={(e) => setNovaSekcijaThumbnailUrl(e.target.value)}
+                                                className="ek-input"
+                                            />
+                                        </div>
+                                        <div className="ek-inline-actions">
+                                            <button type="submit" className="ek-primary-btn">DODAJ</button>
+                                            <button type="button" onClick={() => setIsAddingSekcija(false)} className="ek-secondary-btn">ODUSTANI</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            ) : (
+                                <button onClick={() => setIsAddingSekcija(true)} className="ek-secondary-btn" style={{marginTop: '1rem', borderStyle: 'dashed', width: '100%', padding: '15px'}}>
+                                    <FiPlus /> DODAJ NOVU SEKCIJU
+                                </button>
+                            )}
                         </div>
                     </div>
-                ))}
-                <button onClick={() => navigate('/lekcije')} className="back-button">Dodaj Lekcije</button>
+
+                    {/* Panel za Lekcije */}
+                    <div className="ek-glass-panel">
+                        <div className="ek-section-header">
+                            <h2 className="ek-section-title">LEKCIJE</h2>
+                        </div>
+                        
+                        <div className="ek-lessons-grid">
+                            {lessons.map(lesson => (
+                                <div className="ek-lesson-card" key={lesson.id}>
+                                    <h4 className="ek-lesson-title">{lesson.title}</h4>
+                                    <p className="ek-lesson-meta">SEKCIJA: {sekcije.find(s => s.id === lesson.sekcija_id)?.naziv || 'NIJE DODELJENA'}</p>
+                                    <p className="ek-lesson-desc">{lesson.content.substring(0, 80)}...</p>
+                                    <div className="ek-lesson-actions">
+                                        <button onClick={() => handleOpenEditModal(lesson)} className="ek-secondary-btn">
+                                            <FiEdit2 /> IZMENI
+                                        </button>
+                                        <button onClick={() => handleDeleteLesson(lesson.id)} className="ek-danger-btn">
+                                            <FiTrash2 /> OBRIŠI
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            <div className="ek-add-lesson-btn" onClick={() => navigate(`/lekcije`)}>
+                                <FiPlus className="ek-add-lesson-icon" />
+                                <span>DODAJ LEKCIJE U KURS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            {/* Modal za izmenu lekcije */}
             {isEditModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <button className="close-modal-button" onClick={() => setIsEditModalOpen(false)}>&times;</button>
-                        <h2>Izmeni Lekciju: {editingLesson?.title}</h2>
-                        <form onSubmit={handleEditSubmit} className="modal-form">
-                            <label>Naslov: <input type="text" name="title" value={editForm.title} onChange={handleEditFormChange} required /></label>
-                            <label>Sadržaj: <textarea name="content" value={editForm.content} onChange={handleEditFormChange} required></textarea></label>
-                            <label>
-                                Sekcija:
-                                <select name="sekcija_id" value={editForm.sekcija_id} onChange={handleEditFormChange}>
-                                    <option value="">-- Nije dodeljena --</option>
+                <div className="ek-modal-overlay">
+                    <div className="ek-modal-glass">
+                        <button className="ek-modal-close" onClick={() => setIsEditModalOpen(false)}><FiX /></button>
+                        <h2 className="ek-modal-title">IZMENI LEKCIJU</h2>
+                        
+                        <form onSubmit={handleEditSubmit} className="ek-modal-form">
+                            <div className="ek-input-group">
+                                <label>NASLOV LEKCIJE</label>
+                                <input type="text" name="title" value={editForm.title} onChange={handleEditFormChange} className="ek-input" required />
+                            </div>
+                            
+                            <div className="ek-input-group">
+                                <label>SADRŽAJ (OPIS)</label>
+                                <textarea name="content" value={editForm.content} onChange={handleEditFormChange} className="ek-input ek-textarea" required></textarea>
+                            </div>
+                            
+                            <div className="ek-input-group">
+                                <label>PRIPADA SEKCIJI</label>
+                                <select name="sekcija_id" value={editForm.sekcija_id} onChange={handleEditFormChange} className="ek-input ek-select">
+                                    <option value="">-- NIJE DODELJENA --</option>
                                     {sekcije.map(s => (
                                         <option key={s.id} value={s.id}>{s.naziv}</option>
                                     ))}
                                 </select>
-                            </label>
-                            <label>Zameni Video (opciono): <input type="file" accept="video/*" onChange={handleVideoChange} /></label>
+                            </div>
+                            
+                            <div className="ek-input-group">
+                                <label>ZAMENI VIDEO (OPCIONO)</label>
+                                <input type="file" accept="video/*" onChange={handleVideoChange} className="ek-input ek-file-input" />
+                            </div>
+                            
                             {isUploading && (
-                                <div className="upload-progress-container">
-                                    <div className="upload-progress-bar">
-                                        <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
+                                <div className="ek-progress-container">
+                                    <div className="ek-progress-bg">
+                                        <div className="ek-progress-fill" style={{ width: `${uploadProgress}%` }} />
                                     </div>
-                                    <p className="upload-status">{uploadStatus}</p>
+                                    <p className="ek-progress-text">{uploadStatus}</p>
                                 </div>
                             )}
-                            <button type="submit" className="save-button" disabled={isUploading}>
-                                {isUploading ? 'Čuvanje...' : 'Sačuvaj Izmene'}
+                            
+                            <button type="submit" className="ek-primary-btn" disabled={isUploading} style={{width: '100%', marginTop: '1rem'}}>
+                                {isUploading ? (
+                                    <><div className="ek-spinner"></div> ČUVANJE...</>
+                                ) : (
+                                    <><FiSave /> SAČUVAJ IZMENE</>
+                                )}
                             </button>
                         </form>
                     </div>

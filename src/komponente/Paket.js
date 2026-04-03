@@ -1,13 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { FiCheck, FiStar, FiZap, FiArrowRight, FiShield, FiTrendingUp } from "react-icons/fi";
+import { FiCheck, FiArrowRight } from "react-icons/fi";
 import { useAuth } from '../login/auth';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import "./Paket.css";
 
-import banner from '../images/motionakademijabanner.jpg';
-import animatedbanner from '../images/0731banrer.gif';
 import Footer from '../pocetna/Footer.js';
 
 // Logotipi
@@ -25,48 +22,42 @@ const Paket = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  // Paketi sa cenama u RSD (konvertovano iz EUR, 1 EUR ≈ 117 RSD)
   const plans = [
     {
-      title: "STANDARD",
-      price: "50€",
-      priceNumeric: 5730,
-      period: "/ 1 mesec",
-      image: banner,
-      icon: <FiZap />,
+      title: "DIGITAL MASTERCLASS",
+      price: "150€",
+      priceNumeric: 17550,
+      period: "JEDNOKRATNO",
       highlight: false,
-      packageId: "STANDARD_1M",
-      description: "Savršen start za ambiciozne kreatore.",
+      packageId: "BARBER_STANDARD",
+      description: "Savršen start za berbere koji žele da nauče moderne tehnike fade-a i unaprede veštine.",
       features: [
-        "Kompletan Premiere Pro",
-        "Kompletan After Effects",
+        "Kompletan video kurs (Step-by-step)",
+        "Sve tehnike modernog fade-a",
+        "Pravilno korišćenje mašinice i makaza",
         "Pristup platformi zauvek",
-        "Redovni Update-ovi",
-        "Pristup zajednici"
+        "Ekskluzivna barber zajednica"
       ]
     },
     {
-      title: "PRO",
-      price: "140€",
-      priceNumeric: 16380,
-      period: "/ 3 meseca",
-      image: animatedbanner,
-      icon: <FiStar />,
+      title: "MENTORSHIP PRO",
+      price: "450€",
+      priceNumeric: 52650,
+      period: "POZOVITE NAS",
       highlight: true,
-      packageId: "PRO_3M",
-      description: "Maksimalna vrednost za profesionalce.",
+      packageId: "BARBER_PRO",
+      description: "Najbrži put do uspeha uz 1-na-1 rad i detaljno vođenje kroz tehnike i biznis.",
       features: [
-        "Kompletan Premiere Pro",
-        "Kompletan After Effects",
-        "Pristup platformi zauvek",
-        "Redovni Update-ovi",
-        "Pristup zajednici"
+        "Sve iz Digital Masterclass paketa",
+        "1-na-1 online i uživo konsultacije",
+        "Detaljna analiza i korekcija tvojih radova",
+        "Marketing i saveti za vođenje salona",
+        "Internacionalno priznat sertifikat"
       ]
     }
   ];
 
   const handlePurchaseClick = (plan) => {
-    // Preusmeri na stranicu za informacije sa podacima o paketu
     navigate('/informacije', {
       state: {
         packageData: {
@@ -85,47 +76,43 @@ const Paket = () => {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
   };
 
-  const cardVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 50, damping: 20 }
-    }
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
   return (
     <>
       <section className="paket-section" ref={ref}>
-        {/* Background Ambience matches Hero */}
-        <div className="paket-ambience">
-          <div className="paket-orb-1" />
-          <div className="paket-orb-2" />
-        </div>
+        {/* Background Overlays matching Hero */}
+        <div className="noise-overlay"></div>
+        <div className="grid-overlay"></div>
 
         <div className="paket-container">
           <motion.div
             className="paket-header"
-            initial={{ opacity: 0, y: -20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            variants={containerVariants}
           >
-            <div className="paket-badge">
-              <FiTrendingUp className="paket-badge-icon" />
-              <span>INVESTIRAJ U SEBE</span>
-            </div>
-            <h2 className="paket-title">
-              IZABERI SVOJ <span className="text-gradient">PUT</span>
-            </h2>
-            <p className="paket-subtitle">
-              Cena jedne večere za veštinu koja ti donosi slobodu.
-            </p>
+            <motion.div className="paket-badge" variants={itemVariants}>
+              <span className="badge-text">
+                CENOVNIK <span className="badge-version">2024</span>
+              </span>
+            </motion.div>
+
+            <motion.div className="headline-wrapper" variants={itemVariants}>
+              <span className="solid-text">INVESTIRAJ</span>
+              <span className="outline-text">U ZNANJE</span>
+            </motion.div>
+
+            <motion.p className="paket-subtitle" variants={itemVariants}>
+              Izaberi paket koji odgovara tvojim ambicijama. Od online lekcija za osnove, do 1-na-1 mentorstva
+              za one koji žele maksimalno da podignu kvalitet svog barber biznisa.
+            </motion.p>
           </motion.div>
 
           <motion.div
@@ -138,64 +125,45 @@ const Paket = () => {
               <motion.div
                 key={i}
                 className={`paket-card ${plan.highlight ? 'paket-card-highlight' : ''}`}
-                variants={cardVariants}
-                whileHover={{ y: -10, transition: { duration: 0.3 } }}
+                variants={itemVariants}
+                whileHover={{ y: plan.highlight ? -15 : -5, transition: { duration: 0.3 } }}
               >
-                {/* Card Glow Effect */}
-                <div className="card-glow-bg" />
-
                 {plan.highlight && (
-                  <div className="card-popular-badge">
-                    <FiStar /> NAJPOPULARNIJE
+                  <div className="card-popular">
+                    NAJPOPULARNIJE
                   </div>
                 )}
 
-                <div className="card-image-wrap">
-                  <img src={plan.image} alt={plan.title} className="card-bg-img" />
-                  <div className="card-img-overlay" />
-                  <div className="card-icon-box">{plan.icon}</div>
-                </div>
-
-                <div className="card-content">
+                <div className="card-header">
                   <h3 className="card-title">{plan.title}</h3>
                   <p className="card-desc">{plan.description}</p>
-
-                  <div className="card-price-box">
-                    <span className="card-price">{plan.price}</span>
-                    <span className="card-period">{plan.period}</span>
-                  </div>
-
-                  <div className="card-divider" />
-
-                  <ul className="card-features">
-                    {plan.features.map((feat, j) => (
-                      <li key={j} className="card-feature-item">
-                        <span className="feature-check"><FiCheck /></span>
-                        {feat}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    className={`card-btn ${plan.highlight ? 'btn-highlight' : 'btn-standard'}`}
-                    onClick={() => handlePurchaseClick(plan)}
-                  >
-                    <span className="btn-text">PRIDRUŽI SE</span>
-                    <FiArrowRight className="btn-icon" />
-                    <div className="btn-shine" />
-                  </button>
-
-                  <div className="card-footer-info">
-                    <FiShield className="shield-icon" /> 100% Sigurna kupovina
-                  </div>
                 </div>
 
-                {/* Decorative Corners */}
-                <div className="corner-tl" />
-                <div className="corner-br" />
+                <div className="card-price-box">
+                  <span className="card-price">{plan.price}</span>
+                  <span className="card-period">{plan.period}</span>
+                </div>
+
+                <div className="card-divider" />
+
+                <ul className="card-features">
+                  {plan.features.map((feat, j) => (
+                    <li key={j} className="card-feature-item">
+                      <span className="feature-check"><FiCheck /></span>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className={`card-btn ${plan.highlight ? 'btn-highlight' : ''}`}
+                  onClick={() => handlePurchaseClick(plan)}
+                >
+                  <span>{plan.highlight ? 'ZAPOČNI MENTORSTVO' : 'KUPITE KURS'}</span>
+                  <FiArrowRight />
+                </button>
               </motion.div>
             ))}
-
           </motion.div>
 
           {/* Payment & Security Logos */}
@@ -216,8 +184,6 @@ const Paket = () => {
                 </a>
               </div>
 
-              {/* Spacer div to enforce separation if needed conceptually, but flex gap handles it */}
-
               <div className="logos-group payment-group">
                 <img src={maestro} alt="Maestro" className="logo-img" />
                 <img src={mastercard} alt="Mastercard" className="logo-img" />
@@ -231,7 +197,6 @@ const Paket = () => {
           </motion.div>
         </div>
       </section>
-      <Footer />
     </>
   );
 };

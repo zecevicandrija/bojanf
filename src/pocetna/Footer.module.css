@@ -55,7 +55,7 @@
 }
 
 .headlineMain {
-    font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2.5rem, 5.8vw, 8rem);
     font-weight: 800;
     color: #fff;
@@ -68,7 +68,7 @@
 }
 
 .headlineAccent {
-    font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: clamp(2.5rem, 5.8vw, 8rem);
     font-weight: 800;
     color: transparent;
@@ -103,7 +103,7 @@
 }
 
 .logoName {
-    font-family: 'Monument Extended', 'Space Grotesk', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.4rem;
     font-weight: 800;
     color: #FFFFFF;

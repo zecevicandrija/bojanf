@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700;800&family=Inter:wght@300;400;600&display=swap');
-
 /* =================================================
    NAVBAR — Floating Dark Premium Pill Theme
    ================================================= */
@@ -23,7 +21,8 @@
   z-index: 1000;
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
-  box-shadow: none !important; /* Uklanjamo svaki spoljni mdb ili bibliotečki shadow */
+  box-shadow: none !important;
+  /* Uklanjamo svaki spoljni mdb ili bibliotečki shadow */
 }
 
 .navbar.scrolled {
@@ -71,7 +70,8 @@
   padding: 10px 24px 10px 10px;
   border-radius: 50px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.15); /* Refrativna ivica odozgo */
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  /* Refrativna ivica odozgo */
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -115,6 +115,10 @@
   letter-spacing: 0.5px;
 }
 
+.mobile-only-badge {
+  display: none;
+}
+
 /* =================================================
    DESKTOP MENU (Center Pill)
    ================================================= */
@@ -143,7 +147,7 @@
 .nav-link {
   color: #777;
   text-decoration: none;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 11px;
   text-transform: uppercase;
@@ -292,7 +296,7 @@
 }
 
 .mobile-link-num {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: #ff0033;
@@ -361,7 +365,7 @@
 }
 
 .mobile-footer-brand {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   color: #fff;
@@ -405,6 +409,16 @@
 
   .logo-name {
     font-size: 15px;
+  }
+
+  .mobile-only-badge {
+    display: inline-block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 8px;
+    font-weight: 800;
+    color: #ff0033;
+    letter-spacing: 1px;
+    margin-top: -1px;
   }
 
   .mobile-menu-content {

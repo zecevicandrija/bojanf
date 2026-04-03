@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../login/api';
 import "./Produzivanje.css";
 
-import banner from '../images/motionakademijabanner.jpg';
-import animatedbanner from '../images/0731banrer.gif';
+import banner from '../images/bojanslike/slika1.webp';
+import animatedbanner from '../images/bojanslike/slika2.webp';
 import Footer from '../pocetna/Footer.js';
 
 // Logotipi
@@ -377,7 +377,6 @@ const Produzivanje = () => {
 
                 </div>
             </section>
-            <Footer />
         </>
     );
 };

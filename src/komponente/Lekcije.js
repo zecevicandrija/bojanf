@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import * as tus from 'tus-js-client';
 import api from '../login/api';
 import { useAuth } from '../login/auth';
+import { motion } from 'framer-motion';
+import { FiPlus, FiCheck, FiVideo, FiLayers, FiFileText } from 'react-icons/fi';
 import './Lekcije.css';
 
 const Lekcije = () => {
@@ -176,99 +178,158 @@ const Lekcije = () => {
     };
 
     return (
-        <div className="lekcije-container">
-            <h3 className='lekcijenaslov1'>Napravite Lekcije</h3>
+        <div className="instruktor-wrapper">
+            <div className="noise-overlay"></div>
+            <div className="grid-overlay"></div>
 
-            <form onSubmit={handleAddLekcija} className="add-lekcija-form">
-                <div>
-                    <label htmlFor="course_id">Izaberite kurs:</label>
-                    <select
-                        id="course_id"
-                        name="course_id"
-                        value={newLekcija.course_id}
-                        onChange={handleInputChange}
-                        required
+            <div className="instruktor-container">
+                {/* Header Section */}
+                <header className="dashboard-header">
+                    <motion.div
+                        className="dashboard-badge"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
                     >
-                        <option value="">-- Izaberite kurs --</option>
-                        {courses.map((course) => (
-                            <option key={course.id} value={course.id}>
-                                {course.naziv}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                        <span className="badge-text">CONTENT CREATOR</span>
+                    </motion.div>
 
-                <div>
-                    <label htmlFor="sekcija_id">Sekcija:</label>
-                    <select
-                        id="sekcija_id"
-                        name="sekcija_id"
-                        value={newLekcija.sekcija_id}
-                        onChange={handleInputChange}
-                        required
-                        disabled={!newLekcija.course_id || sections.length === 0}
-                    >
-                        <option value="">-- Izaberite sekciju --</option>
-                        {sections.map((sekcija) => (
-                            <option key={sekcija.id} value={sekcija.id}>
-                                {sekcija.naziv}
-                            </option>
-                        ))}
-                    </select>
-                    {newLekcija.course_id && sections.length === 0 && <small>Ovaj kurs nema definisane sekcije. Dodajte ih prvo u admin panelu.</small>}
-                </div>
-
-                <div>
-                    <label htmlFor="title">Naslov lekcije:</label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        value={newLekcija.title}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="content">Sadržaj lekcije:</label>
-                    <textarea
-                        id="content"
-                        name="content"
-                        value={newLekcija.content}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label htmlFor="video">Izaberite Video:</label>
-                    <input
-                        type="file"
-                        id="video"
-                        name="video"
-                        accept="video/*"
-                        onChange={handleVideoChange}
-                        required
-                    />
-                </div>
-
-                {/* Progress bar za upload */}
-                {loading && (
-                    <div className="upload-progress-container">
-                        <div className="upload-progress-bar">
-                            <div
-                                className="upload-progress-fill"
-                                style={{ width: `${uploadProgress}%` }}
-                            />
-                        </div>
-                        <p className="upload-status">{uploadStatus}</p>
+                    <div className="headline-wrapper">
+                        <span className="solid-text">DODAVANJE</span>
+                        <span className="outline-text">LEKCIJA</span>
                     </div>
-                )}
 
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Dodavanje...' : 'Dodaj Lekciju'}
-                </button>
-            </form>
+                    <p className="dashboard-subtitle">
+                        Proširite svoju bazu znanja. Otpremanjem novih lekcija pružate vrednost svojim studentima.
+                    </p>
+                </header>
+
+                <div className="dashboard-main-grid-full">
+                    <motion.div
+                        className="modal-content-glass lesson-form-container"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="modal-header">
+                            <FiPlus /> <h2>Nova Lekcija</h2>
+                        </div>
+
+                        <form onSubmit={handleAddLekcija} className="modal-form-premium">
+                            <div className="form-row-premium">
+                                <div className="input-group-premium">
+                                    <label htmlFor="course_id">IZABERITE KURS</label>
+                                    <select
+                                        id="course_id"
+                                        name="course_id"
+                                        value={newLekcija.course_id}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <option value="">-- Izaberite --</option>
+                                        {courses.map((course) => (
+                                            <option key={course.id} value={course.id}>
+                                                {course.naziv}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="input-group-premium">
+                                    <label htmlFor="sekcija_id">SEKCIJA KURSA</label>
+                                    <select
+                                        id="sekcija_id"
+                                        name="sekcija_id"
+                                        value={newLekcija.sekcija_id}
+                                        onChange={handleInputChange}
+                                        required
+                                        disabled={!newLekcija.course_id || sections.length === 0}
+                                    >
+                                        <option value="">-- Izaberite --</option>
+                                        {sections.map((sekcija) => (
+                                            <option key={sekcija.id} value={sekcija.id}>
+                                                {sekcija.naziv}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {newLekcija.course_id && sections.length === 0 && (
+                                        <small className="error-hint">Ovaj kurs nema definisane sekcije.</small>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="input-group-premium">
+                                <label htmlFor="title">NASLOV LEKCIJE</label>
+                                <div className="input-with-icon">
+                                    <FiFileText className="field-icon" />
+                                    <input
+                                        type="text"
+                                        id="title"
+                                        name="title"
+                                        value={newLekcija.title}
+                                        onChange={handleInputChange}
+                                        placeholder="npr. Uvod u napredne tehnike"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="input-group-premium">
+                                <label htmlFor="content">OPIS / SADRŽAJ</label>
+                                <textarea
+                                    id="content"
+                                    name="content"
+                                    value={newLekcija.content}
+                                    onChange={handleInputChange}
+                                    placeholder="Unesite detaljan opis lekcije..."
+                                    required
+                                    rows="5"
+                                />
+                            </div>
+
+                            <div className="input-group-premium">
+                                <label htmlFor="video">VIDEO FAJL</label>
+                                <div className="custom-file-upload">
+                                    <input
+                                        type="file"
+                                        id="video"
+                                        name="video"
+                                        accept="video/*"
+                                        onChange={handleVideoChange}
+                                        required
+                                        className="hidden-file-input"
+                                    />
+                                    <label htmlFor="video" className="file-upload-label">
+                                        <FiVideo />
+                                        <span>{video ? video.name : 'Izaberi video lekciju'}</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Progress bar za upload */}
+                            {loading && (
+                                <div className="upload-progress-wrapper-premium">
+                                    <div className="progress-info">
+                                        <span>{uploadStatus}</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="upload-progress-bar-premium">
+                                        <motion.div
+                                            className="upload-progress-fill-premium"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${uploadProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <button type="submit" className="modal-save-btn" disabled={loading}>
+                                <span>{loading ? 'U TOKU...' : 'DODAJ LEKCIJU'}</span>
+                                {loading ? null : <FiCheck />}
+                                <div className="btn-shine" />
+                            </button>
+                        </form>
+                    </motion.div>
+                </div>
+            </div>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiUser, FiMail, FiTag, FiArrowRight, FiPackage, FiCheck, FiAlertCircle } from 'react-icons/fi';
+import { FiUser, FiMail, FiTag, FiArrowRight, FiPackage, FiCheck, FiAlertCircle, FiPhone } from 'react-icons/fi';
 import { useAuth } from '../login/auth';
 import api from '../login/api';
 import './Informacije.css';
@@ -198,6 +198,9 @@ const Informacije = () => {
     return (
         <>
             <div className="informacije-wrapper">
+                <div className="noise-overlay"></div>
+                <div className="grid-overlay"></div>
+
                 <div className="informacije-container">
                     <motion.div
                         className="informacije-content"
@@ -205,114 +208,77 @@ const Informacije = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                     >
-                        {/* Header */}
+                        {/* Header matching Paket/Hero */}
                         <div className="info-header">
-                            <motion.h1
-                                className="info-title"
-                                initial={{ opacity: 0, y: -10 }}
+                            <motion.div
+                                className="info-badge"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.1 }}
+                            >
+                                <span className="badge-text">CHECKOUT <span className="badge-version">1.0</span></span>
+                            </motion.div>
+
+                            <motion.div
+                                className="headline-wrapper"
+                                initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                Završi <span className="text-gradient">Kupovinu</span>
-                            </motion.h1>
-                            <p className="info-subtitle">Samo još jedan korak do tvog kursa</p>
+                                <span className="solid-text">POTVRDI</span>
+                                <span className="outline-text">PRIJAVU</span>
+                            </motion.div>
+
+                            <p className="info-subtitle">Podigni svoju karijeru na viši nivo uz ekspertsko mentorstvo.</p>
                         </div>
 
                         <div className="info-grid">
-                            {/* Package Summary */}
-                            <motion.div
-                                className="package-summary-card"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.3 }}
-                            >
-                                <div className="summary-header">
-                                    <FiPackage className="summary-icon" />
-                                    <h3>Tvoj Paket</h3>
-                                </div>
-
-                                <div className="summary-content">
-                                    <div className="package-title-box">
-                                        <h2>{packageData.title}</h2>
-                                        <span className="package-period">{packageData.period}</span>
-                                    </div>
-
-                                    <p className="package-description">{packageData.description}</p>
-
-                                    <div className="price-breakdown">
-                                        <div className="price-row">
-                                            <span>Cena paketa:</span>
-                                            <span className="price-value">{packageData.price}</span>
-                                        </div>
-
-                                        {discountApplied && (
-                                            <>
-                                                <div className="price-row discount-row">
-                                                    <span>Popust ({discountApplied.percent}%):</span>
-                                                    <span className="discount-value">-{savings.toFixed(0)} RSD</span>
-                                                </div>
-                                                <div className="divider" />
-                                            </>
-                                        )}
-
-                                        <div className="price-row total-row">
-                                            <span>Ukupno:</span>
-                                            <span className="total-value">{finalPrice.toFixed(0)} RSD</span>
-                                        </div>
-                                    </div>
-
-                                    {discountApplied && (
-                                        <div className="discount-applied-badge">
-                                            <FiCheck /> Popust primenjen: {discountApplied.code}
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-
-                            {/* Form */}
+                            {/* Form - Left Side */}
                             <motion.div
                                 className="checkout-form-card"
-                                initial={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.4 }}
                             >
-                                <h3 className="form-title">Tvoje Informacije</h3>
+                                <h3 className="form-title">Lični podaci</h3>
 
-                                <div className="form-group">
-                                    <label htmlFor="ime">
-                                        <FiUser /> Ime
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="ime"
-                                        name="ime"
-                                        value={formData.ime}
-                                        onChange={handleInputChange}
-                                        className={errors.ime ? 'error' : ''}
-                                        placeholder="Unesite vaše ime"
-                                    />
-                                    {errors.ime && <span className="error-message">{errors.ime}</span>}
-                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label htmlFor="ime">
+                                            <FiUser /> Ime
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="ime"
+                                            name="ime"
+                                            value={formData.ime}
+                                            onChange={handleInputChange}
+                                            className={errors.ime ? 'error' : ''}
+                                            placeholder="Ime"
+                                        />
+                                        {errors.ime && <span className="error-message">{errors.ime}</span>}
+                                    </div>
 
-                                <div className="form-group">
-                                    <label htmlFor="prezime">
-                                        <FiUser /> Prezime
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="prezime"
-                                        name="prezime"
-                                        value={formData.prezime}
-                                        onChange={handleInputChange}
-                                        className={errors.prezime ? 'error' : ''}
-                                        placeholder="Unesite vaše prezime"
-                                    />
-                                    {errors.prezime && <span className="error-message">{errors.prezime}</span>}
+                                    <div className="form-group">
+                                        <label htmlFor="prezime">
+                                            <FiUser /> Prezime
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="prezime"
+                                            name="prezime"
+                                            value={formData.prezime}
+                                            onChange={handleInputChange}
+                                            className={errors.prezime ? 'error' : ''}
+                                            placeholder="Prezime"
+                                        />
+                                        {errors.prezime && <span className="error-message">{errors.prezime}</span>}
+                                    </div>
                                 </div>
 
                                 <div className="form-group">
                                     <label htmlFor="email">
-                                        <FiMail /> Email
+                                        <FiMail /> Email adresa
                                     </label>
                                     <input
                                         type="email"
@@ -328,7 +294,7 @@ const Informacije = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="telefon">
-                                        Telefon (opciono)
+                                        <FiPhone /> Kontakt telefon
                                     </label>
                                     <input
                                         type="tel"
@@ -340,10 +306,10 @@ const Informacije = () => {
                                     />
                                 </div>
 
-                                {/* Discount Code Section */}
+                                {/* Discount Section */}
                                 <div className="discount-section">
-                                    <label htmlFor="discountCode">
-                                        <FiTag /> Kod popusta
+                                    <label htmlFor="discountCode" className="discount-label">
+                                        <FiTag /> Imate kod za popust?
                                     </label>
 
                                     {!discountApplied ? (
@@ -353,7 +319,7 @@ const Informacije = () => {
                                                 id="discountCode"
                                                 value={discountCode}
                                                 onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                                                placeholder="Unesite kod"
+                                                placeholder="UNESITE KOD"
                                                 disabled={isValidatingDiscount}
                                             />
                                             <button
@@ -361,7 +327,7 @@ const Informacije = () => {
                                                 onClick={handleApplyDiscount}
                                                 disabled={isValidatingDiscount || !discountCode.trim()}
                                             >
-                                                {isValidatingDiscount ? 'Provera...' : 'Primeni'}
+                                                {isValidatingDiscount ? 'PROVERA...' : 'PRIMENI'}
                                             </button>
                                         </div>
                                     ) : (
@@ -373,7 +339,7 @@ const Informacije = () => {
                                                 className="remove-discount-btn"
                                                 onClick={handleRemoveDiscount}
                                             >
-                                                Ukloni
+                                                UKLONI
                                             </button>
                                         </div>
                                     )}
@@ -384,39 +350,67 @@ const Informacije = () => {
                                         </div>
                                     )}
                                 </div>
+                            </motion.div>
 
-                                {/* NOVO: Auto-Renewal Notice */}
-                                <motion.div
-                                    className="auto-renewal-notice"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                >
-                                    <div className="notice-icon">🔄</div>
-                                    <div className="notice-content">
-                                        <h4>Automatsko Produžavanje</h4>
-                                        <p>
-                                            Na stranici plaćanja <strong>označite opciju "Sačuvaj karticu"</strong> kako bi se vaša pretplata automatski produžavala svakog meseca. Možete otkazati u bilo kom trenutku.
-                                        </p>
+                            {/* Summary - Right Side */}
+                            <motion.div
+                                className="package-summary-card"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <div className="summary-header">
+                                    <FiPackage className="summary-icon" />
+                                    <h3>Pregled porudžbine</h3>
+                                </div>
+
+                                <div className="summary-content">
+                                    <div className="package-title-box">
+                                        <h2>{packageData.title}</h2>
+                                        <span className="package-period">{packageData.period}</span>
                                     </div>
-                                </motion.div>
 
-                                {/* Submit Button */}
-                                <motion.button
-                                    className="proceed-payment-btn"
-                                    onClick={handleProceedToPayment}
-                                    disabled={isProcessing}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    <span>{isProcessing ? 'Obrada...' : 'Nastavi Kupovinu'}</span>
-                                    <FiArrowRight className="btn-icon" />
-                                    <div className="btn-shine" />
-                                </motion.button>
+                                    <p className="package-description">{packageData.description}</p>
 
-                                <p className="secure-payment-note">
-                                    🔒 Sigurna kupovina preko Chipcard sistema
-                                </p>
+                                    <div className="price-breakdown">
+                                        <div className="price-row">
+                                            <span>Osnovna cena</span>
+                                            <span className="price-value">{packageData.price}</span>
+                                        </div>
+
+                                        {discountApplied && (
+                                            <>
+                                                <div className="price-row discount-row">
+                                                    <span>Popust ({discountApplied.percent}%)</span>
+                                                    <span className="discount-value">-{savings.toFixed(0)} RSD</span>
+                                                </div>
+                                                <div className="divider" />
+                                            </>
+                                        )}
+
+                                        <div className="price-row total-row">
+                                            <span>UKUPNO ZA UPLATU</span>
+                                            <span className="total-value">{finalPrice.toFixed(0)} <small>RSD</small></span>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Button moved here for better mobile flow if needed, or kept at bottom */}
+                                    <motion.button
+                                        className="proceed-payment-btn"
+                                        onClick={handleProceedToPayment}
+                                        disabled={isProcessing}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <span>{isProcessing ? 'OBRADA...' : 'NASTAVI NA PLAĆANJE'}</span>
+                                        <FiArrowRight className="btn-icon" />
+                                        <div className="btn-shine" />
+                                    </motion.button>
+
+                                    <p className="secure-payment-note">
+                                        🔒 100% SIGURNO PLAĆANJE
+                                    </p>
+                                </div>
                             </motion.div>
                         </div>
 
@@ -452,7 +446,6 @@ const Informacije = () => {
                     </motion.div>
                 </div>
             </div>
-            <Footer />
         </>
     );
 };

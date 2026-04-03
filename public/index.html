@@ -12,21 +12,54 @@
   <meta property="og:url" content="https://localhost:3000/" />
   <meta property="og:title" content="Bojan Fashion" />
   <meta property="og:description" content="Bojan Fashion" />
-  <meta property="og:image" content="%PUBLIC_URL%/logo.webp" />
+  <meta property="og:image" content="%PUBLIC_URL%/novilogo.png" />
 
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://localhost:3000/" />
   <meta property="twitter:title" content="Bojan Fashion" />
   <meta property="twitter:description" content="Bojan Fashion" />
-  <meta property="twitter:image" content="%PUBLIC_URL%/logo.webp" />
+  <meta property="twitter:image" content="%PUBLIC_URL%/novilogo.png" />
 
-  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.webp" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/novilogo.png" />
 
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
   <title>Bojan Fashion</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;700&display=swap">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- PRECONNECT: Samo najvažniji origin, bez duplikata -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- FONTOVI: Non-blocking, ne blokira renderovanje -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;700;800&family=Space+Grotesk:wght@700;800&display=swap" 
+        rel="stylesheet" 
+        media="print" 
+        onload="this.media='all'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+  </noscript>
+
+  <!-- PRELOAD HERO SLIKE (Ubrzava LCP) - STABILAN URL iz /public, bez hash-a -->
+  <link rel="preload" as="image" href="%PUBLIC_URL%/bojan2.webp" fetchpriority="high">
+  
+  <style id="critical-css">
+    /* Stabilni base stilovi bez čekanja na main.css */
+    :root { --bg-dark: #0A0A0A; --accent: #D4AF37; }
+    body { background-color: var(--bg-dark); margin: 0; padding: 0; overflow-x: hidden; font-family: 'Outfit', sans-serif; }
+    #root { width: 100%; min-height: 100vh; background-color: var(--bg-dark); }
+    
+    /* Navbar skeleton */
+    .navbar { position: fixed; top: 1.5rem; left: 0; right: 0; height: 64px; z-index: 1000; }
+    
+    /* Hero Section placeholder */
+    section[class*="heroSection"] { 
+      background-color: var(--bg-dark); 
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center;
+      visibility: visible !important;
+    }
+  </style>
 </head>
 
 <body>

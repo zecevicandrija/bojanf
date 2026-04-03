@@ -1,54 +1,337 @@
-.zarada-widget-container {
+/* === Statistika Sistema - Full Page Styles === */
+.za-full-page-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0A0A0A;
+    color: #fff;
+    padding: 6rem 5%;
+    font-family: 'Outfit', sans-serif;
+    z-index: 1;
+    overflow-x: hidden;
+}
+
+.za-noise-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.za-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-size: 60px 60px;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.za-glass-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 4px;
+    /* Malo oštriji izgled */
+}
+
+
+.za-zarada-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+/* Header & Nav */
+.za-top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4rem;
+}
+
+.za-back-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 12px 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+.za-back-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border-color: #fff;
+}
+
+.za-page-title-box {
+    text-align: right;
+}
+
+.za-badge {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.6rem;
+    color: #ff0033;
+    letter-spacing: 0.3em;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.za-main-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+}
+
+/* Filter Bar */
+.za-filter-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem !important;
+    margin-bottom: 2rem !important;
+}
+
+.za-date-selection {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.za-picker-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #ff0033;
+}
+
+.za-date-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    width: 100px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.za-to-separator {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.za-presets {
+    display: flex;
+    gap: 8px;
+}
+
+.za-preset-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.za-preset-btn:hover,
+.za-preset-btn.active {
+    background: #ff0033;
+    color: #fff;
+    border-color: #ff0033;
+}
+
+/* Stats Cards */
+.za-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.za-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.za-stat-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 0, 51, 0.1);
+    border: 1px solid rgba(255, 0, 51, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #ff0033;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+
+.za-stat-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.za-stat-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+}
+
+.za-stat-trend {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem;
+    color: #00ff66;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Main Grid */
+.za-main-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+}
+
+.za-content-main {
+    padding: 3rem !important;
+}
+
+.za-chart-full-container {
+    height: 400px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.za-popular-courses {
+    padding: 2.5rem !important;
+}
+
+.za-courses-table {
+    margin-top: 2rem;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    color: #f0f0f0;
-    font-family: "Josefin Sans", sans-serif;
+    gap: 1rem;
 }
 
-.zarada-title {
-    font-size: 1.5rem;
-    color: #f0f0f0;
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    border-bottom: 1px solid #444;
-    padding-bottom: 1rem;
-}
-
-.zarada-summary {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-family: "Josefin Sans", sans-serif;
-}
-
-.zarada-summary p {
-    margin: 0;
-    color: #ccc;
-    font-size: 1rem;
-    font-family: "Josefin Sans", sans-serif;
-}
-
-.zarada-total {
-    margin: 0.5rem 0 0 0;
-    font-size: 2.2rem;
-    font-weight: bold;
-    color: #ffa500; /* Narandžasta boja */
-}
-
-.chart-container {
-    flex-grow: 1;
-    position: relative;
-    height: 300px; /* Definišemo visinu za kontejner grafikona */
-    width: 100%;
-    font-family: "Josefin Sans", sans-serif;
-}
-
-.chart-container p {
+.za-course-row {
     display: flex;
-    justify-content: center;
     align-items: center;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.za-course-row:hover {
+    background: rgba(255, 0, 51, 0.05);
+    border-color: rgba(255, 0, 51, 0.3);
+    transform: translateX(10px);
+}
+
+.za-course-rank {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.2);
+    margin-right: 1.5rem;
+}
+
+.za-course-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    display: block;
+}
+
+.za-course-price {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    color: #ff0033;
+}
+
+.za-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.za-section-desc {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 5px;
+}
+
+/* Loader */
+.za-loader {
     height: 100%;
-    color: #888;
-    font-family: "Josefin Sans", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    color: #ff0033;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 1100px) {
+    .za-main-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .za-top-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2rem;
+    }
+
+    .za-page-title-box {
+        text-align: left;
+    }
+
+    .za-filter-wrapper {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: flex-start;
+    }
 }

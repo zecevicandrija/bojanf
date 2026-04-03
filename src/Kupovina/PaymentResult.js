@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import api from '../login/api';
 import { useAuth } from '../login/auth';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiCheck, FiX, FiAlertTriangle, FiClock, FiArrowRight, FiArrowLeft, FiShoppingBag } from 'react-icons/fi';
 import './PaymentResult.css';
 
 const PaymentResult = () => {
@@ -40,12 +42,12 @@ const PaymentResult = () => {
                         sessionToken: searchParams.get('sessionToken')
                     };
 
-                    await axios.post('https://test-api.zecevicdev.com/api/msu/callback', callbackData);
+                    await axios.post('http://localhost:5000/api/msu/callback', callbackData);
                 }
 
                 // Dohvati konačan status transakcije
                 const response = await axios.get(
-                    `https://test-api.zecevicdev.com/api/msu/status/${merchantPaymentId}`
+                    `http://localhost:5000/api/msu/status/${merchantPaymentId}`
                 );
 
                 if (response.data.success) {
@@ -93,120 +95,206 @@ const PaymentResult = () => {
 
     if (paymentStatus === 'loading') {
         return (
-            <div className="payment-result-container">
-                <div className="loading-spinner">
-                    <div className="spinner"></div>
-                    <h2>Proveravamo status plaćanja...</h2>
+            <div className="instruktor-wrapper">
+                <div className="noise-overlay"></div>
+                <div className="grid-overlay"></div>
+                <div className="payment-result-full-page">
+                    <div className="loading-spinner-premium">
+                        <div className="spinner-glow"></div>
+                        <motion.h2
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0, 1, 0.5, 1] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                        >
+                            PROVERA TRANSAKCIJE...
+                        </motion.h2>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="payment-result-container">
-            {paymentStatus === 'success' && (
-                <div className="payment-result success">
-                    <div className="icon-success">✓</div>
-                    <h1>Plaćanje uspešno!</h1>
-                    <p>Račun Vaše platne kartice je zadužen.</p>
+        <div className="instruktor-wrapper">
+            <div className="noise-overlay"></div>
+            <div className="grid-overlay"></div>
 
-                    {transactionData && (
-                        <div className="transaction-details">
-                            <h3>Detalji transakcije:</h3>
-                            <div className="detail-row">
-                                <span className="label">Kurs:</span>
-                                <span className="value">{transactionData.kursNaziv}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Iznos:</span>
-                                <span className="value">{transactionData.amount} {transactionData.currency}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Broj narudžbine:</span>
-                                <span className="value">{transactionData.merchantPaymentId}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Status:</span>
-                                <span className="value status-approved">{transactionData.responseMsg}</span>
-                            </div>
-                        </div>
-                    )}
+            <div className="instruktor-container">
+                <div className="payment-result-full-page">
+                    <AnimatePresence mode="wait">
+                        {paymentStatus === 'success' && (
+                            <motion.div 
+                                className="payment-card success"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key="success"
+                            >
+                                <div className="status-header">
+                                    <div className="status-icon-box">
+                                        <FiCheck />
+                                    </div>
+                                    <span className="status-label">APPROVED</span>
+                                </div>
 
-                    <button className="btn-primary" onClick={handleGoToCourses}>
-                        Idi na moje kurseve
-                    </button>
+                                <div className="payment-content">
+                                    <h1>Plaćanje Uspešno!</h1>
+                                    <p>Vaša transakcija je procesuirana. Pristup kursu vam je sada omogućen.</p>
+
+                                    {transactionData && (
+                                        <div className="premium-details-box">
+                                            <div className="detail-item">
+                                                <span className="d-label">KURS</span>
+                                                <span className="d-value">{transactionData.kursNaziv}</span>
+                                            </div>
+                                            <div className="detail-item">
+                                                <span className="d-label">IZNOS</span>
+                                                <span className="d-value">{transactionData.amount} {transactionData.currency}</span>
+                                            </div>
+                                            <div className="detail-item">
+                                                <span className="d-label">ID TRANSAKCIJE</span>
+                                                <span className="d-value">#{transactionData.merchantPaymentId}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="payment-actions">
+                                        <motion.button 
+                                            className="admin-action-btn primary" 
+                                            onClick={handleGoToCourses}
+                                            whileHover={{ y: -3 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <FiArrowRight /> <span>IDI NA MOJE KURSEVE</span>
+                                            <div className="btn-shine" />
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {paymentStatus === 'failed' && (
+                            <motion.div 
+                                className="payment-card failed"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key="failed"
+                            >
+                                <div className="status-header">
+                                    <div className="status-icon-box">
+                                        <FiX />
+                                    </div>
+                                    <span className="status-label">DECLINED</span>
+                                </div>
+
+                                <div className="payment-content">
+                                    <h1>Plaćanje Neuspešno</h1>
+                                    <p>Nažalost, došlo je do greške prilikom autorizacije vaše kartice.</p>
+
+                                    {transactionData && (
+                                        <div className="premium-details-box">
+                                            <div className="detail-item">
+                                                <span className="d-label">RAZLOG</span>
+                                                <span className="d-value">{transactionData.responseMsg}</span>
+                                            </div>
+                                            <div className="detail-item">
+                                                <span className="d-label">ID NALOGA</span>
+                                                <span className="d-value">#{transactionData.merchantPaymentId}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="payment-actions">
+                                        <button className="admin-action-btn secondary" onClick={handleGoBack}>
+                                            <FiArrowLeft /> <span>POKUŠAJ PONOVO</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {paymentStatus === 'cancelled' && (
+                            <motion.div 
+                                className="payment-card cancelled"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key="cancelled"
+                            >
+                                <div className="status-header">
+                                    <div className="status-icon-box">
+                                        <FiAlertTriangle />
+                                    </div>
+                                    <span className="status-label">CANCELLED</span>
+                                </div>
+
+                                <div className="payment-content">
+                                    <h1>Plaćanje Otkazano</h1>
+                                    <p>Odustali ste od procesa plaćanja. Korpa je i dalje sačuvana.</p>
+
+                                    <div className="payment-actions">
+                                        <button className="admin-action-btn secondary" onClick={handleGoBack}>
+                                            <FiShoppingBag /> <span>POVRATAK NA KORPU</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {paymentStatus === 'pending' && (
+                            <motion.div 
+                                className="payment-card pending"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key="pending"
+                            >
+                                <div className="status-header">
+                                    <div className="status-icon-box">
+                                        <FiClock />
+                                    </div>
+                                    <span className="status-label">PROCESSING</span>
+                                </div>
+
+                                <div className="payment-content">
+                                    <h1>Ubrzo Smo Gotovi</h1>
+                                    <p>Transakcija se trenutno proverava. Dobićete potvrdu na e-mail.</p>
+
+                                    <div className="payment-actions">
+                                        <button className="admin-action-btn secondary" onClick={() => navigate('/')}>
+                                            <FiArrowLeft /> <span>POVRATAK NA POČETNU</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {paymentStatus === 'error' && (
+                            <motion.div 
+                                className="payment-card failed"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key="error"
+                            >
+                                <div className="status-header">
+                                    <div className="status-icon-box">
+                                        <FiAlertTriangle />
+                                    </div>
+                                    <span className="status-label">SYSTEM ERROR</span>
+                                </div>
+
+                                <div className="payment-content">
+                                    <h1>Sistemska Greška</h1>
+                                    <p>{error || 'Došlo je do neočekivanog problema pri komunikaciji sa bankom.'}</p>
+
+                                    <div className="payment-actions">
+                                        <button className="admin-action-btn secondary" onClick={handleGoBack}>
+                                            <FiArrowLeft /> <span>POVRATAK NA KORPU</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
-            )}
-
-            {paymentStatus === 'failed' && (
-                <div className="payment-result failed">
-                    <div className="icon-failed">✕</div>
-                    <h1>Plaćanje neuspešno</h1>
-                    <p>Račun Vaše platne kartice nije zadužen.</p>
-
-                    {transactionData && (
-                        <div className="transaction-details">
-                            <div className="detail-row">
-                                <span className="label">Razlog:</span>
-                                <span className="value">{transactionData.responseMsg}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Broj narudžbine:</span>
-                                <span className="value">{transactionData.merchantPaymentId}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    <button className="btn-secondary" onClick={handleGoBack}>
-                        Pokušaj ponovo
-                    </button>
-                </div>
-            )}
-
-            {paymentStatus === 'cancelled' && (
-                <div className="payment-result cancelled">
-                    <div className="icon-cancelled">!</div>
-                    <h1>Plaćanje otkazano</h1>
-                    <p>Otkazali ste proces plaćanja.</p>
-
-                    <button className="btn-secondary" onClick={handleGoBack}>
-                        Povratak na korpu
-                    </button>
-                </div>
-            )}
-
-            {paymentStatus === 'pending' && (
-                <div className="payment-result pending">
-                    <div className="icon-pending">⏳</div>
-                    <h1>Plaćanje u obradi</h1>
-                    <p>Vaša transakcija je u obradi. Kontaktiraćemo vas uskoro.</p>
-
-                    {transactionData && (
-                        <div className="transaction-details">
-                            <div className="detail-row">
-                                <span className="label">Broj narudžbine:</span>
-                                <span className="value">{transactionData.merchantPaymentId}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    <button className="btn-secondary" onClick={() => navigate('/')}>
-                        Povratak na početnu
-                    </button>
-                </div>
-            )}
-
-            {paymentStatus === 'error' && (
-                <div className="payment-result error">
-                    <div className="icon-error">⚠</div>
-                    <h1>Greška</h1>
-                    <p>{error || 'Došlo je do greške. Molimo pokušajte ponovo.'}</p>
-
-                    <button className="btn-secondary" onClick={handleGoBack}>
-                        Povratak na korpu
-                    </button>
-                </div>
-            )}
+            </div>
         </div>
     );
 };
