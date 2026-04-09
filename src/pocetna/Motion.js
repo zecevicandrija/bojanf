@@ -6,6 +6,8 @@ import styles from './Motion.module.css';
 import slika9 from '../images/bojanslike/slika9.webp';
 import slika10 from '../images/bojanslike/slika10.webp';
 import slika11 from '../images/bojanslike/slika11.webp';
+import slika15 from '../images/bojanslike/slika15.webp';
+
 
 
 gsap.registerPlugin(ScrollTrigger);
@@ -27,17 +29,24 @@ const Motion = () => {
         },
         {
             id: "02",
-            title: "GEOMETRIJA LICA",
-            desc: "Nije svaka frizura za svaku glavu. Nauči kako da prepoznaš oblik lica i prilagodiš strukturu frizure.",
-            bullets: ["Analiza oblika lica i lobanje", "Personalizacija i simetrija", "Korekcija asimetrije lica"],
+            title: "SALONSKE TEHNIKE",
+            desc: "Brzina i preciznost u svakodnevnom radu. Fokus na najtraženije komercijalne stilove koji donose lojalne klijente.",
+            bullets: ["Buzz Cut", "French Crop", "Taper Fade", "Fast Fade"],
             bgImage: slika10
         },
         {
             id: "03",
+            title: "GEOMETRIJSKO ŠIŠANJE",
+            desc: "Nije svaka frizura za svaku glavu. Nauči kako da prepoznaš oblik lica i prilagodiš strukturu frizure.",
+            bullets: ["Square Layer (kvadratni sloj)", "Round Layer (kruzni sloj)", "Round Graduation (kruzna graduacija)"],
+            bgImage: slika11
+        },
+        {
+            id: "04",
             title: "BIZNIS I KLIJENTI",
             desc: "Najbolji zanat vredi samo ako znaš da ga unovčiš. Premium strategije za izgradnju brenda i lojalnosti.",
             bullets: ["Psihologija komunikacije", "Brendiranje i društvene mreže", "Cenovna politika i vrednost"],
-            bgImage: slika11
+            bgImage: slika15
         }
     ];
 
@@ -58,7 +67,8 @@ const Motion = () => {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: "+=4500",
+                    end: "+=6000",
+
                     pin: true,
                     scrub: 1.2,
                     anticipatePin: 1,
@@ -95,7 +105,7 @@ const Motion = () => {
                 y: 0,
                 ease: "power3.out",
                 duration: 2,
-            }, 7.5);
+            }, 9.5);
         });
 
         // --- MOBILE ---
@@ -104,7 +114,8 @@ const Motion = () => {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: "+=5000",
+                    end: "+=6500",
+
                     pin: true,
                     scrub: 1.5,
                 }
@@ -129,7 +140,7 @@ const Motion = () => {
 
                 if (blackout) gsap.set(blackout, { opacity: 0.85 });
 
-                const targetY = (window.innerHeight * (10 + (index * 6))) / 100;
+                const targetY = (window.innerHeight * (2 + (index * 6))) / 100;
                 const startTime = index * 3.5 + 0.5;
 
                 tl.to(card, {

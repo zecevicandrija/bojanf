@@ -14,10 +14,8 @@ import {
 } from "chart.js";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiCalendar, FiTrendingUp, FiUsers, FiDollarSign } from "react-icons/fi";
-import DatePicker from "react-datepicker";
 import { subDays, startOfMonth, startOfYear, format } from "date-fns";
-import api from "../login/api"; 
-import "react-datepicker/dist/react-datepicker.css";
+import api from "../login/api";
 import "./Zarada.css";
 
 // Register Chart.js components
@@ -69,7 +67,7 @@ const Zarada = () => {
           new Date(item.dan).toLocaleDateString("sr-RS", { day: '2-digit', month: '2-digit' })
         );
         const earningsData = earningsBackend.map((item) => item.dnevna_zarada);
-        
+
         const total = earningsData.reduce((acc, curr) => acc + Number(curr), 0);
         setTotalEarnings(total);
 
@@ -120,11 +118,11 @@ const Zarada = () => {
     const end = new Date();
     let start;
     switch (period) {
-        case '7d': start = subDays(end, 7); break;
-        case '30d': start = subDays(end, 30); break;
-        case '6m': start = startOfMonth(subDays(end, 180)); break;
-        case '1y': start = startOfYear(new Date()); break;
-        default: start = subDays(end, 30);
+      case '7d': start = subDays(end, 7); break;
+      case '30d': start = subDays(end, 30); break;
+      case '6m': start = startOfMonth(subDays(end, 180)); break;
+      case '1y': start = startOfYear(new Date()); break;
+      default: start = subDays(end, 30);
     }
     setDateRange({ startDate: start, endDate: end });
   };
@@ -145,16 +143,16 @@ const Zarada = () => {
     },
     scales: {
       x: {
-        ticks: { 
+        ticks: {
           color: "rgba(255, 255, 255, 0.5)",
-          font: { family: "JetBrains Mono", size: 10 }
+          font: { family: "Outfit", size: 10 }
         },
         grid: { display: false },
       },
       y: {
-        ticks: { 
+        ticks: {
           color: "rgba(255, 255, 255, 0.5)",
-          font: { family: "JetBrains Mono", size: 10 },
+          font: { family: "Outfit", size: 10 },
           callback: (value) => `${value}€`
         },
         grid: { color: "rgba(255, 255, 255, 0.05)" },
@@ -170,101 +168,103 @@ const Zarada = () => {
       <div className="za-zarada-inner">
         {/* Top Header */}
         <div className="za-top-nav">
-            <button onClick={() => navigate('/instruktor')} className="za-back-btn">
-                <FiArrowLeft /> <span>NAZAD NA DASHBOARD</span>
-            </button>
-            <div className="za-page-title-box">
-                <span className="za-badge">ANALYTICS ENGINE</span>
-                <h1 className="za-main-title">ZARADA SISTEMA</h1>
-            </div>
+          <button onClick={() => navigate('/instruktor')} className="za-back-btn">
+            <FiArrowLeft /> <span>NAZAD NA DASHBOARD</span>
+          </button>
+          <div className="za-page-title-box">
+            <span className="za-badge">ANALYTICS ENGINE</span>
+            <h1 className="za-main-title">ZARADA SISTEMA</h1>
+          </div>
         </div>
 
         {/* Global Filter Bar */}
         <div className="za-filter-wrapper za-glass-panel">
-            <div className="za-date-selection">
-                <div className="za-picker-box">
-                    <FiCalendar />
-                    <DatePicker 
-                        selected={dateRange.startDate} 
-                        onChange={date => setDateRange({ ...dateRange, startDate: date })} 
-                        className="za-date-input"
-                    />
-                </div>
-                <span className="za-to-separator">DO</span>
-                <div className="za-picker-box">
-                    <FiCalendar />
-                    <DatePicker 
-                        selected={dateRange.endDate} 
-                        onChange={date => setDateRange({ ...dateRange, endDate: date })} 
-                        className="za-date-input"
-                    />
-                </div>
+          <div className="za-date-selection">
+            <div className="za-picker-box">
+              <FiCalendar />
+              <input
+                type="date"
+                value={format(dateRange.startDate, 'yyyy-MM-dd')}
+                onChange={e => setDateRange({ ...dateRange, startDate: new Date(e.target.value) })}
+                className="za-date-input"
+              />
             </div>
-            <div className="za-presets">
-                <button onClick={() => handlePresetRange('7d')} className={format(dateRange.startDate, 'yyyy-MM-dd') === format(subDays(new Date(), 7), 'yyyy-MM-dd') ? "za-preset-btn active" : "za-preset-btn"}>7D</button>
-                <button onClick={() => handlePresetRange('30d')} className={format(dateRange.startDate, 'yyyy-MM-dd') === format(subDays(new Date(), 30), 'yyyy-MM-dd') ? "za-preset-btn active" : "za-preset-btn"}>30D</button>
-                <button onClick={() => handlePresetRange('6m')} className="za-preset-btn">6M</button>
-                <button onClick={() => handlePresetRange('1y')} className="za-preset-btn">YTD</button>
+            <span className="za-to-separator">DO</span>
+            <div className="za-picker-box">
+              <FiCalendar />
+              <input
+                type="date"
+                value={format(dateRange.endDate, 'yyyy-MM-dd')}
+                onChange={e => setDateRange({ ...dateRange, endDate: new Date(e.target.value) })}
+                className="za-date-input"
+              />
             </div>
+          </div>
+          <div className="za-presets">
+            <button onClick={() => handlePresetRange('7d')} className={format(dateRange.startDate, 'yyyy-MM-dd') === format(subDays(new Date(), 7), 'yyyy-MM-dd') ? "za-preset-btn active" : "za-preset-btn"}>7D</button>
+            <button onClick={() => handlePresetRange('30d')} className={format(dateRange.startDate, 'yyyy-MM-dd') === format(subDays(new Date(), 30), 'yyyy-MM-dd') ? "za-preset-btn active" : "za-preset-btn"}>30D</button>
+            <button onClick={() => handlePresetRange('6m')} className="za-preset-btn">6M</button>
+            <button onClick={() => handlePresetRange('1y')} className="za-preset-btn">YTD</button>
+          </div>
         </div>
 
         {/* Stat Cards Grid */}
         <div className="za-stats-grid">
-            <div className="za-stat-card za-glass-panel">
-                <div className="za-stat-icon earnings-icon"><FiDollarSign /></div>
-                <div className="za-stat-info">
-                    <span className="za-stat-label">PRIHOD U PERIODU</span>
-                    <h4 className="za-stat-value">{totalEarnings.toLocaleString()} €</h4>
-                </div>
-                <div className="za-stat-trend positive"><FiTrendingUp /> PRODAJA</div>
+          <div className="za-stat-card za-glass-panel">
+            <div className="za-stat-icon earnings-icon"><FiDollarSign /></div>
+            <div className="za-stat-info">
+              <span className="za-stat-label">PRIHOD U PERIODU</span>
+              <h4 className="za-stat-value">{totalEarnings.toLocaleString()} €</h4>
             </div>
+            <div className="za-stat-trend positive"><FiTrendingUp /> PRODAJA</div>
+          </div>
 
-            <div className="za-stat-card za-glass-panel">
-                <div className="za-stat-icon students-icon"><FiUsers /></div>
-                <div className="za-stat-info">
-                    <span className="za-stat-label">STUDENTI</span>
-                    <h4 className="za-stat-value">{totalStudents}</h4>
-                </div>
-                <div className="za-stat-trend positive">{activeSubscriptions} AKTIVNIH</div>
+          <div className="za-stat-card za-glass-panel">
+            <div className="za-stat-icon students-icon"><FiUsers /></div>
+            <div className="za-stat-info">
+              <span className="za-stat-label">STUDENTI</span>
+              <h4 className="za-stat-value">{totalStudents}</h4>
             </div>
+            <div className="za-stat-trend positive">{activeSubscriptions} AKTIVNIH</div>
+          </div>
         </div>
 
         {/* Dynamic Content Grid */}
         <div className="za-main-dashboard-grid">
-            <div className="za-content-main za-glass-panel">
-                <div className="za-header-row">
-                    <div className="za-title-group">
-                        <h3 className="za-section-title">TREND PRIHODA</h3>
-                        <p className="za-section-desc">Vizuelna reprezentacija rasta u izabranom periodu</p>
-                    </div>
-                </div>
-
-                <div className="za-chart-full-container">
-                    {isLoading ? (
-                        <div className="za-loader">Sinhronizacija podataka...</div>
-                    ) : chartData.labels.length > 0 ? (
-                        <Line data={chartData} options={chartOptions} />
-                    ) : (
-                        <div className="za-no-data">Nema podataka za ovaj opseg.</div>
-                    )}
-                </div>
+          <div className="za-content-main za-glass-panel">
+            <div className="za-header-row">
+              <div className="za-title-group">
+                <h3 className="za-section-title">TREND PRIHODA</h3>
+                <p className="za-section-desc">Vizuelna reprezentacija rasta u izabranom periodu</p>
+              </div>
             </div>
 
-            <div className="za-popular-courses za-glass-panel">
-                <h3 className="za-section-title">TOP PROIZVODI</h3>
-                <div className="za-courses-table">
-                    {popularCourses.map((course, idx) => (
-                        <div key={course.kurs_id} className="za-course-row">
-                            <span className="za-course-rank">#{idx + 1}</span>
-                            <div className="za-course-name-box">
-                                <span className="za-course-name">{course.kurs_naziv}</span>
-                                <span className="za-course-price">{course.broj_kupovina} prodaja</span>
-                            </div>
-                        </div>
-                    ))}
-                    {popularCourses.length === 0 && <p className="za-no-data">Nema podataka.</p>}
-                </div>
+            <div className="za-chart-full-container">
+              {isLoading ? (
+                <div className="za-loader">Sinhronizacija podataka...</div>
+              ) : chartData.labels.length > 0 ? (
+                <Line data={chartData} options={chartOptions} />
+              ) : (
+                <div className="za-no-data">Nema podataka za ovaj opseg.</div>
+              )}
             </div>
+          </div>
+
+          <div className="za-popular-courses za-glass-panel">
+            <h3 className="za-section-title">TOP PROIZVODI</h3>
+            <div className="za-courses-table">
+              {popularCourses.map((course, idx) => (
+                <div key={course.kurs_id} className="za-course-row">
+                  <span className="za-course-rank">#{idx + 1}</span>
+                  <div className="za-course-name-box">
+                    <span className="za-course-name">{course.kurs_naziv}</span>
+                    <span className="za-course-price">{course.broj_kupovina} prodaja</span>
+                  </div>
+                </div>
+              ))}
+              {popularCourses.length === 0 && <p className="za-no-data">Nema podataka.</p>}
+            </div>
+          </div>
         </div>
       </div>
     </div>

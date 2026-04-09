@@ -26,23 +26,27 @@
 
   <title>Bojan Fashion</title>
 
-  <!-- PRECONNECT: Samo najvažniji origin, bez duplikata -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <!-- FONTOVI: Non-blocking, ne blokira renderovanje -->
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;700;800&family=Space+Grotesk:wght@700;800&display=swap" 
-        rel="stylesheet" 
-        media="print" 
-        onload="this.media='all'">
-  <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
-  </noscript>
+  <!-- FONT PRELOADS: Ubrzava renderovanje teksta i smanjuje layout shift -->
+  <link rel="preload" href="%PUBLIC_URL%/fonts/OutfitVariableFont_wght1.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="%PUBLIC_URL%/fonts/SpaceGrotesk[wght].woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- PRELOAD HERO SLIKE (Ubrzava LCP) - STABILAN URL iz /public, bez hash-a -->
   <link rel="preload" as="image" href="%PUBLIC_URL%/bojan2.webp" fetchpriority="high">
   
   <style id="critical-css">
+    @font-face {
+      font-family: 'Outfit';
+      src: url('%PUBLIC_URL%/fonts/OutfitVariableFont_wght1.woff2') format('woff2');
+      font-weight: 100 1000;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Space Grotesk';
+      src: url('%PUBLIC_URL%/fonts/SpaceGrotesk[wght].woff2') format('woff2');
+      font-weight: 300 700;
+      font-display: swap;
+    }
+
     /* Stabilni base stilovi bez čekanja na main.css */
     :root { --bg-dark: #0A0A0A; --accent: #D4AF37; }
     body { background-color: var(--bg-dark); margin: 0; padding: 0; overflow-x: hidden; font-family: 'Outfit', sans-serif; }

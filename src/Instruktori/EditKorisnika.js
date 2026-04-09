@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    FiArrowLeft, 
-    FiUsers, 
-    FiSearch, 
-    FiEdit, 
-    FiTrash2, 
-    FiX, 
-    FiMail, 
-    FiLock, 
-    FiCalendar, 
-    FiSave, 
+import {
+    FiArrowLeft,
+    FiUsers,
+    FiSearch,
+    FiEdit,
+    FiTrash2,
+    FiX,
+    FiMail,
+    FiLock,
+    FiCalendar,
+    FiSave,
     FiAlertTriangle,
     FiUser
 } from 'react-icons/fi';
@@ -127,10 +127,10 @@ const EditKorisnika = () => {
         <div className={styles.ekPage}>
             <div className={styles.noiseOverlay}></div>
             <div className={styles.gridOverlay}></div>
-            
+
             <div className={styles.ekContainer}>
-                <motion.button 
-                    className={styles.ekBackBtn} 
+                <motion.button
+                    className={styles.ekBackBtn}
                     onClick={() => navigate('/instruktor')}
                     whileHover={{ x: -5 }}
                 >
@@ -158,7 +158,7 @@ const EditKorisnika = () => {
                     </div>
                 </div>
 
-                <motion.div 
+                <motion.div
                     className={styles.ekTableResponsive}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -177,7 +177,7 @@ const EditKorisnika = () => {
                         </thead>
                         <tbody>
                             {filteredKorisnici.length > 0 ? filteredKorisnici.map((k, idx) => (
-                                <motion.tr 
+                                <motion.tr
                                     key={k.id}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -185,9 +185,9 @@ const EditKorisnika = () => {
                                 >
                                     <td style={{ color: '#ff0033', fontWeight: 800 }}>#{k.id}</td>
                                     <td style={{ fontWeight: 600 }}>{k.ime} {k.prezime}</td>
-                                    <td style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>{k.email}</td>
+                                    <td style={{ fontFamily: 'Outfit', fontSize: '0.8rem' }}>{k.email}</td>
                                     <td style={{ textTransform: 'uppercase', fontSize: '0.7rem', color: '#666' }}>{k.uloga}</td>
-                                    <td style={{ fontFamily: 'JetBrains Mono' }}>{k.subscription_expires_at ? new Date(k.subscription_expires_at.replace(' ', 'T')).toLocaleDateString() : '—'}</td>
+                                    <td style={{ fontFamily: 'Outfit' }}>{k.subscription_expires_at ? new Date(k.subscription_expires_at.replace(' ', 'T')).toLocaleDateString() : '—'}</td>
                                     <td>
                                         <span className={`${styles.ekStatusBadge} ${k.subscription_status === 'active' ? styles.active : styles.inactive}`}>
                                             {k.subscription_status || 'N/A'}
@@ -215,7 +215,7 @@ const EditKorisnika = () => {
             <AnimatePresence>
                 {isEditUserModalOpen && userToEdit && (
                     <div className={styles.ekModalOverlay}>
-                        <motion.div 
+                        <motion.div
                             className={styles.ekModalContent}
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -223,7 +223,7 @@ const EditKorisnika = () => {
                         >
                             <button className={styles.ekCloseBtn} onClick={() => setIsEditUserModalOpen(false)}><FiX /></button>
                             <h2>Izmeni Korisnika</h2>
-                            
+
                             <div className={styles.ekModalHeaderInfo}>
                                 <div className={styles.ekAvatar}><FiUser /></div>
                                 <div>
@@ -263,7 +263,7 @@ const EditKorisnika = () => {
             <AnimatePresence>
                 {isDeleteUserModalOpen && userToDelete && (
                     <div className={styles.ekModalOverlay}>
-                        <motion.div 
+                        <motion.div
                             className={`${styles.ekModalContent} ${styles.ekDeleteModal}`}
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}

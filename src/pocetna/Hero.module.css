@@ -162,6 +162,19 @@
   z-index: 25;
 }
 
+.buttonsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
 .ctaButton {
   background-color: #ff0033;
   color: #fff;
@@ -169,7 +182,7 @@
   font-weight: 800;
   font-size: 0.95rem;
   text-transform: uppercase;
-  padding: 1.15rem 2.4rem;
+  padding: 1.15rem 1.8rem;
   border: none;
   cursor: pointer;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
@@ -182,6 +195,40 @@
 .ctaButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 24px rgba(255, 0, 51, 0.3);
+}
+
+.ghostButton {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 1.15rem 1.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.ghostButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.playIconSmall {
+  font-size: 0.7rem;
+}
+
+.certificateText {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  margin-left: 0.25rem;
 }
 
 /* ===== Social proof ===== */
@@ -286,42 +333,288 @@
   transform: translateX(8%);
 }
 
-/* ===== Glassmorphism card ===== */
-.glassCard {
+/* ===== VSL Floating Card ===== */
+.vslCard {
   position: absolute;
-  bottom: 12%;
-  right: 6%;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  /* Light edge top */
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  /* Light edge left */
-  border-radius: 12px;
+  bottom: 8%;
+  right: 5%;
+  width: 320px;
+  aspect-ratio: 16 / 9;
+  border-radius: 0;
+  /* Double border effect for 'expensive' tech look */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
+    inset 0 0 15px rgba(255, 0, 51, 0.05);
+  /* Subtle inner red glow */
   z-index: 30;
   pointer-events: auto;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-  /* Pop out from background */
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-.glassIcon {
-  font-size: 1.3rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+.vslCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ff0033 0%, #ff0033 15%, transparent 15%);
+  z-index: 10;
 }
 
-.glassLabel {
+.vslCard::after {
+  content: "Metod 1.0";
+  position: absolute;
+  top: 8px;
+  left: 10px;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.45rem;
+  font-weight: 800;
+  color: #ff0033;
   letter-spacing: 0.1em;
+  z-index: 10;
+  opacity: 0.8;
+  text-shadow: 0 0 5px rgba(255, 0, 51, 0.5);
+}
+
+.vslCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 0, 51, 0.4);
+  box-shadow:
+    0 35px 70px -15px rgba(0, 0, 0, 0.9),
+    0 0 20px rgba(255, 0, 51, 0.15);
+}
+
+.vslVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* ===== Custom Video Player UI ===== */
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customControls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.videoWrapper:hover .customControls {
+  opacity: 1;
+}
+
+.progressContainer {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  position: relative;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #ff0033;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.leftControls, .rightControls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.controlBtn {
+  background: transparent;
+  border: none;
   color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: transform 0.2s ease, color 0.2s ease;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
   font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.controlBtn:hover {
+  color: #ff0033;
+  transform: scale(1.1);
+}
+
+.timeDisplay {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+}
+
+.vslOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  transition: background 0.3s ease;
+  pointer-events: none;
+}
+
+.vslPlayContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Default state: hide mobile VSL wrapper on desktop */
+.mobileVslCardWrapper {
+  display: none;
+}
+
+.vslPlayBtn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.vslPlayIcon {
+  color: #000;
+  font-size: 1.1rem;
+  margin-left: 4px;
+  /* balance out the triangle */
+}
+
+.vslDashedCircle {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border: 1px dashed rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: spin 10s linear infinite;
+  z-index: 1;
+}
+
+.vslCard:hover .vslOverlay {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.vslCard:hover .vslPlayBtn {
+  transform: scale(1.1);
+}
+
+.vslCard:hover .vslDashedCircle {
+  opacity: 1;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Fullscreen Modal ===== */
+.fullScreenModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalClose {
+  position: absolute;
+  top: 2rem;
+  right: 2.5rem;
+  background: transparent;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: color 0.2s ease;
+  z-index: 10000;
+}
+
+.modalClose:hover {
+  color: #ff0033;
+}
+
+.modalVideoContainer {
+  width: 95%;
+  max-width: 1200px;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 1024px) {
+  .modalVideoContainer {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
 }
 
 /* ===== Scroll indicator ===== */
@@ -375,13 +668,14 @@
     width: 55%;
   }
 
-  .glassCard {
+  .vslCard {
     right: 4%;
-    bottom: 12%;
+    bottom: 8%;
+    width: 250px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) { /* Povećano sa 768px da landscape telefoni ne bi trigger-ovali desktop verziju */
   .educationBadge {
     display: none;
   }
@@ -411,13 +705,39 @@
 
   .subHeadline {
     max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .mobileVslCardWrapper {
+    display: block;
     margin-bottom: 2rem;
+    width: 100%;
+  }
+
+  .mobileVslCard {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    max-width: 320px;
+    /* Neka ne bude prevelik */
+    margin: 0 auto;
+    /* Centered */
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  .activeMobileVideo video {
+    pointer-events: auto !important;
   }
 
   .actionWrapper {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.5rem;
+  }
+
+  .ghostButton {
+    display: none;
   }
 
   .socialProof {
@@ -428,7 +748,7 @@
 
 
 
-  .glassCard {
+  .desktopVslCard {
     display: none;
   }
 

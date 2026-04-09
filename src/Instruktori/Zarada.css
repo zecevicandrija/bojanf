@@ -129,9 +129,21 @@
     border: none;
     color: #fff;
     font-family: 'Space Grotesk', sans-serif;
-    width: 100px;
+    width: 130px;
     cursor: pointer;
     font-size: 0.9rem;
+    outline: none;
+    color-scheme: dark; /* Helps with calendar popover in some browsers */
+}
+
+.za-date-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.za-date-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }
 
 .za-to-separator {

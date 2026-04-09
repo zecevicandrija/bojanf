@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../login/auth';
 import { motion } from 'framer-motion';
-import { RiLineChartLine, RiAccountCircleLine } from 'react-icons/ri';
+import { RiLineChartLine, RiAccountCircleLine, RiBookLine } from 'react-icons/ri';
 import './Navbar.css';
 import { ThemeContext } from '../komponente/ThemeContext';
 import logo from '../images/bojanslike/novilogo.png'
@@ -99,24 +99,7 @@ const Navbar = () => {
                                     Početna
                                 </Link>
                             </li>
-                            <li>
-                                <Link
-                                    to="/#footer"
-                                    className="nav-link"
-                                    onClick={(e) => {
-                                        if (location.pathname === '/') {
-                                            e.preventDefault();
-                                            document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
-                                        } else {
-                                            setTimeout(() => {
-                                                document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
-                                            }, 100);
-                                        }
-                                    }}
-                                >
-                                    Kontakt
-                                </Link>
-                            </li>
+
                             {user && (
                                 <li>
                                     <Link to="/kupljenkurs" className={`nav-link ${isActive('/kupljenkurs') ? 'active' : ''}`}>
@@ -137,6 +120,9 @@ const Navbar = () => {
                                             <RiLineChartLine />
                                         </Link>
                                     )}
+                                    <Link to="/kupljenkurs" className="nav-icon-btn mobile-only" title="Lekcije">
+                                        <RiBookLine />
+                                    </Link>
                                     <Link to="/profil" className="nav-icon-btn" title="Profil">
                                         <RiAccountCircleLine />
                                     </Link>
@@ -200,34 +186,16 @@ const Navbar = () => {
                             <span className="mobile-link-num">02</span>
                             <span className="mobile-link-text">Kursevi</span>
                         </Link>
-                        <Link
-                            to="/#footer"
-                            className="mobile-link"
-                            onClick={(e) => {
-                                if (location.pathname === '/') {
-                                    e.preventDefault();
-                                    document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
-                                    closeMobileMenu();
-                                } else {
-                                    closeMobileMenu();
-                                    setTimeout(() => {
-                                        document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' });
-                                    }, 100);
-                                }
-                            }}
-                        >
-                            <span className="mobile-link-num">03</span>
-                            <span className="mobile-link-text">Kontakt</span>
-                        </Link>
+
                         {user && (
                             <Link to="/kupljenkurs" className={`mobile-link ${isActive('/kupljenkurs') ? 'active' : ''}`} onClick={closeMobileMenu}>
-                                <span className="mobile-link-num">04</span>
+                                <span className="mobile-link-num">03</span>
                                 <span className="mobile-link-text">Lekcije</span>
                             </Link>
                         )}
                         {user && (
                             <Link to="/profil" className={`mobile-link ${isActive('/profil') ? 'active' : ''}`} onClick={closeMobileMenu}>
-                                <span className="mobile-link-num">05</span>
+                                <span className="mobile-link-num">04</span>
                                 <span className="mobile-link-text">Profil</span>
                             </Link>
                         )}

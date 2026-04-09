@@ -100,7 +100,7 @@ const Paket = () => {
           >
             <motion.div className="paket-badge" variants={itemVariants}>
               <span className="badge-text">
-                CENOVNIK <span className="badge-version">2024</span>
+                CENOVNIK
               </span>
             </motion.div>
 
