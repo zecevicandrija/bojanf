@@ -90,7 +90,7 @@ router.post('/create-session', createSessionLimiter, validate(createMsuSessionSc
             merchantPaymentId,
             amount: totalAmount,
             orderItems,
-            returnUrl: 'https://test-api.zecevicdev.com/api/msu/callback-redirect'
+            returnUrl: `${process.env.FRONTEND_URL.replace(/\/$/, '')}/api/msu/callback-redirect`
         };
 
         // Koristi CIT session za automatic recurring payments
@@ -244,7 +244,7 @@ router.all('/callback-redirect', async (req, res) => {
             }
 
             if (!transaction) {
-                return res.redirect(`https://localhost:3000/placanje/rezultat?error=missing_payment_id`);
+                return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?error=missing_payment_id`);
             }
 
             console.log('✅ Found transaction via fallback method:', transaction.merchant_payment_id);
@@ -274,7 +274,7 @@ router.all('/callback-redirect', async (req, res) => {
                 console.log(`  - ${tx.merchant_payment_id} (created: ${tx.created_at})`);
             });
 
-            return res.redirect(`https://localhost:3000/placanje/rezultat?error=transaction_not_found&id=${encodeURIComponent(merchantPaymentId)}`);
+            return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?error=transaction_not_found&id=${encodeURIComponent(merchantPaymentId)}`);
         }
 
         const transaction = transactions[0];
@@ -288,7 +288,7 @@ router.all('/callback-redirect', async (req, res) => {
         // ✅ IDEMPOTENCY GUARD: Ako je transakcija već obrađena, preskoči sve
         if (transaction.status === 'APPROVED') {
             console.log('⚠️ Transaction already APPROVED, skipping duplicate processing. merchantPaymentId:', merchantPaymentId);
-            return res.redirect(`https://localhost:3000/profil?payment=success`);
+            return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?merchantPaymentId=${merchantPaymentId}`);
         }
 
         const status = responseCode === '00' ? 'APPROVED' : 'FAILED';
@@ -518,7 +518,7 @@ router.all('/callback-redirect', async (req, res) => {
             console.error('❌ Transaction ROLLED BACK for merchantPaymentId:', merchantPaymentId);
             console.error('   Error:', txError.message);
             console.error('   Stack:', txError.stack);
-            return res.redirect(`https://localhost:3000/placanje/rezultat?error=server_error`);
+            return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?error=server_error`);
         } finally {
             connection.release();
             console.log('🔓 DB connection released for merchantPaymentId:', merchantPaymentId);
@@ -554,6 +554,7 @@ router.all('/callback-redirect', async (req, res) => {
             }
 
             // Fiskalizacija: Kreiraj račun i pošalji mejl
+            /* Temporarily disabled until certificate is uploaded to NetRacuni
             try {
                 let invoiceItemName = 'Motion Akademija - Pretplata';
                 let invoiceAmount = parseFloat(transaction.amount);
@@ -606,15 +607,16 @@ router.all('/callback-redirect', async (req, res) => {
             } catch (invoiceErr) {
                 console.error('⚠️ Invoice creation/email failed (non-blocking):', invoiceErr.message);
             }
+            */
 
-            return res.redirect(`https://localhost:3000/profil?payment=success`);
+            return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?merchantPaymentId=${merchantPaymentId}`);
         } else {
-            return res.redirect(`https://localhost:3000/placanje/rezultat?merchantPaymentId=${merchantPaymentId}&status=failed&message=${encodeURIComponent(responseMsg)}`);
+            return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?merchantPaymentId=${merchantPaymentId}&status=failed&message=${encodeURIComponent(responseMsg)}`);
         }
 
     } catch (error) {
         console.error('Error handling MSU callback redirect:', error);
-        return res.redirect(`https://localhost:3000/placanje/rezultat?error=server_error`);
+        return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?error=server_error`);
     }
 });
 
