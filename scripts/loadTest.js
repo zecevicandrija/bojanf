@@ -13,9 +13,9 @@
  * NAPOMENA: Pokreni DIREKTNO na VPS-u da bi izbegli mrežni latency.
  */
 
-// URL se može proslediti kao argument: node loadTest.js http://localhost:5000
+// URL se može proslediti kao argument: node loadTest.js https://test-api.zecevicdev.com
 // Ako nema argumenta, koristi localhost (za VPS direktno)
-const BASE_URL = process.argv[2] || 'http://localhost:5000';
+const BASE_URL = process.argv[2] || 'https://test-api.zecevicdev.com';
 
 // ——— Pomoćne funkcije ———
 
