@@ -554,7 +554,6 @@ router.all('/callback-redirect', async (req, res) => {
             }
 
             // Fiskalizacija: Kreiraj račun i pošalji mejl
-            /* Temporarily disabled until certificate is uploaded to NetRacuni
             try {
                 let invoiceItemName = 'Motion Akademija - Pretplata';
                 let invoiceAmount = parseFloat(transaction.amount);
@@ -607,7 +606,7 @@ router.all('/callback-redirect', async (req, res) => {
             } catch (invoiceErr) {
                 console.error('⚠️ Invoice creation/email failed (non-blocking):', invoiceErr.message);
             }
-            */
+
 
             return res.redirect(`${process.env.FRONTEND_URL}/placanje/rezultat?merchantPaymentId=${merchantPaymentId}`);
         } else {
