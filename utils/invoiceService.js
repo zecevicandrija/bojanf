@@ -30,7 +30,7 @@ async function createInvoice({ itemName, price, quantity = 1, paymentType = 2 })
             items: [
                 {
                     name: itemName,
-                    taxLabels: ['Ж'], // PDV 19% (srpski standard za elektronske usluge)
+                    taxLabels: ['А'], // Oznaka 'А' (Није у ПДВ) prema NetRačuni API-ju za Vaš nalog
                     unit: 'KOM',
                     quantity,
                     price: parseFloat(price.toFixed(2)),
