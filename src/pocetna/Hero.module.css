@@ -176,6 +176,8 @@
 }
 
 .ctaButton {
+  display: inline-block;
+  text-decoration: none;
   background-color: #ff0033;
   color: #fff;
   font-family: 'Space Grotesk', sans-serif;

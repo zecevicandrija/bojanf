@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { RiScissorsLine } from 'react-icons/ri';
 import styles from './Motion.module.css';
+import { Link } from 'react-router-dom';
 import slika9 from '../images/bojanslike/slika9.webp';
 import slika10 from '../images/bojanslike/slika10.webp';
 import slika11 from '../images/bojanslike/slika11.webp';
@@ -67,10 +68,10 @@ const Motion = () => {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: "+=6000",
+                    end: "+=4500",
 
                     pin: true,
-                    scrub: 1.2,
+                    scrub: 0.7,
                     anticipatePin: 1,
                 }
             });
@@ -95,8 +96,8 @@ const Motion = () => {
                     x: `${targetX}vw`,
                     clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
                     ease: "expo.out",
-                    duration: 3,
-                }, index * 2 + 0.5);
+                    duration: 2,
+                }, index * 1.5 + 0.5);
             });
 
             gsap.set(closerRef.current, { opacity: 0, y: 50 });
@@ -104,8 +105,8 @@ const Motion = () => {
                 opacity: 1,
                 y: 0,
                 ease: "power3.out",
-                duration: 2,
-            }, 9.5);
+                duration: 1.5,
+            }, 7.5);
         });
 
         // --- MOBILE ---
@@ -114,10 +115,10 @@ const Motion = () => {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: "+=6500",
+                    end: "+=5000",
 
                     pin: true,
-                    scrub: 1.5,
+                    scrub: 1,
                 }
             });
 
@@ -141,13 +142,13 @@ const Motion = () => {
                 if (blackout) gsap.set(blackout, { opacity: 0.85 });
 
                 const targetY = (window.innerHeight * (2 + (index * 6))) / 100;
-                const startTime = index * 3.5 + 0.5;
+                const startTime = index * 2.5 + 0.5;
 
                 tl.to(card, {
                     y: targetY,
                     clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
                     ease: "power3.out",
-                    duration: 4,
+                    duration: 2.5,
                 }, startTime);
 
                 if (blackout) {
@@ -158,17 +159,17 @@ const Motion = () => {
                     }, startTime + 0.8);
 
                     if (index < cardsRef.current.length - 1) {
-                        const nextStartTime = (index + 1) * 3.5 + 0.5;
+                        const nextStartTime = (index + 1) * 2.5 + 0.5;
                         tl.to(blackout, {
                             opacity: 0.75,
-                            duration: 1.5,
+                            duration: 1,
                             ease: "power2.out"
                         }, nextStartTime + 0.5);
                     }
                 }
             });
 
-            const closerStartTime = (cardsRef.current.length - 1) * 3.5 + 5.0;
+            const closerStartTime = (cardsRef.current.length - 1) * 2.5 + 3.5;
             gsap.set(closerRef.current, { opacity: 0, y: 50, xPercent: -50, left: "50%" });
             tl.to(closerRef.current, {
                 opacity: 1,
@@ -226,10 +227,10 @@ const Motion = () => {
 
             <div className={styles.closerContainer} ref={closerRef}>
                 <h3 className={styles.closerTitle}>Spreman da preuzmeš kontrolu?</h3>
-                <button className={styles.ctaButton}>
+                <Link to="/paket" className={styles.ctaButton}>
                     <span>ZAPOČNI KURS</span>
                     <RiScissorsLine className={styles.ctaIcon} />
-                </button>
+                </Link>
             </div>
         </section>
     );

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import styles from './Hero.module.css';
+import { Link } from 'react-router-dom';
 import PREVIEW_VIDEO from '../images/bojanslike/0406.mp4';
 
 const HERO_IMG = process.env.PUBLIC_URL + '/bojan2.webp';
@@ -232,13 +233,10 @@ const Hero = () => {
                     <div className={`${styles.actionWrapper} intro-item`} style={{ opacity: 0 }}>
                         <div className={styles.buttonsContainer}>
                             <div className={styles.buttonGroup}>
-                                <button className={styles.ctaButton}>Apliciraj za kurs</button>
+                                <Link to="/paket" className={styles.ctaButton}>Apliciraj za kurs</Link>
                                 <button className={styles.ghostButton} onClick={() => setIsModalOpen(true)}>
                                     <span className={styles.playIconSmall}>▶</span> POGLEDAJ METODU (12 MIN)
                                 </button>
-                            </div>
-                            <div className={styles.certificateText}>
-                                🎓 INTERNACIONALO PRIZNAT SERTIFIKAT
                             </div>
                         </div>
 

@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { MoveHorizontal, Scissors, Clock, TrendingUp, ArrowRight } from 'lucide-react';
 import styles from './Galerija.module.css';
 
@@ -192,9 +193,9 @@ const Galerija = () => {
                         <p>
                             Pridruži se stotinama frizera koji su unapredili svoju tehniku, ubrzali proces i udvostručili svoje prihode uz Masterclass program.
                         </p>
-                        <button className={styles.ctaButton}>
+                        <Link to="/paket" className={styles.ctaButton}>
                             POČNI DANAS <ArrowRight size={20} />
-                        </button>
+                        </Link>
                     </div>
                 </motion.div>
             </div>

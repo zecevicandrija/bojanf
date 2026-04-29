@@ -4,7 +4,7 @@ import { FiCheck, FiStar, FiZap, FiTag, FiAlertCircle } from "react-icons/fi";
 import { useAuth } from '../login/auth';
 import { useNavigate } from 'react-router-dom';
 import api from '../login/api';
-import "./Produzivanje.css";
+import styles from "./Produzivanje.module.css";
 
 import banner from '../images/bojanslike/slika1.webp';
 import animatedbanner from '../images/bojanslike/slika2.webp';
@@ -184,30 +184,29 @@ const Produzivanje = () => {
 
     return (
         <>
-            <section className="produzivanje-section" ref={ref}>
-                <div className="produzivanje-ambience">
-                    <div className="produzivanje-orb-1" />
-                    <div className="produzivanje-orb-2" />
-                </div>
+            <section className={styles.section} ref={ref}>
+                <div className={styles.noiseOverlay} />
+                <div className={styles.gridOverlay} />
+                <div className={styles.glow} />
 
-                <div className="produzivanje-container">
+                <div className={styles.container}>
                     <motion.div
-                        className="produzivanje-header"
+                        className={styles.header}
                         initial={{ opacity: 0, y: -30 }}
                         animate={isInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.6 }}
                     >
-                        <h1 className="produzivanje-title">
+                        <h1 className={styles.title}>
                             Produžite Vašu Pretplatu
                         </h1>
-                        <p className="produzivanje-subtitle">
+                        <p className={styles.subtitle}>
                             Nastavite sa učenjem i pristupom premium sadržaju
                         </p>
                     </motion.div>
 
                     {/* User Info Card - MOVED ABOVE PACKAGES */}
                     <motion.div
-                        className="produzivanje-user-info"
+                        className={styles.userInfo}
                         initial={{ opacity: 0, y: 20 }}
                         animate={isInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ delay: 0.3, duration: 0.5 }}
@@ -216,20 +215,20 @@ const Produzivanje = () => {
                         <p><strong>Email:</strong> {user.email}</p>
                         <p><strong>Ime:</strong> {user.ime} {user.prezime}</p>
                         {user.subscription_expires_at && (
-                            <p className="expiry-info">
+                            <p className={styles.expiryInfo}>
                                 <strong>Trenutna pretplata ističe:</strong>{' '}
                                 {new Date(user.subscription_expires_at).toLocaleDateString('sr-RS')}
                             </p>
                         )}
 
                         {/* Discount Code Section */}
-                        <div className="produzivanje-discount-section">
+                        <div className={styles.discountSection}>
                             <label htmlFor="discountCode">
                                 <FiTag /> Kod popusta
                             </label>
 
                             {!discountApplied ? (
-                                <div className="produzivanje-discount-input-group">
+                                <div className={styles.discountInputGroup}>
                                     <input
                                         type="text"
                                         id="discountCode"
@@ -239,7 +238,7 @@ const Produzivanje = () => {
                                         disabled={isValidatingDiscount}
                                     />
                                     <button
-                                        className="produzivanje-apply-discount-btn"
+                                        className={styles.applyDiscountBtn}
                                         onClick={handleApplyDiscount}
                                         disabled={isValidatingDiscount || !discountCode.trim()}
                                     >
@@ -247,12 +246,12 @@ const Produzivanje = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="produzivanje-discount-applied-input">
-                                    <span className="produzivanje-applied-code">
+                                <div className={styles.discountAppliedInput}>
+                                    <span className={styles.appliedCode}>
                                         <FiCheck /> {discountApplied.code} (-{discountApplied.percent}%)
                                     </span>
                                     <button
-                                        className="produzivanje-remove-discount-btn"
+                                        className={styles.removeDiscountBtn}
                                         onClick={handleRemoveDiscount}
                                     >
                                         Ukloni
@@ -261,13 +260,13 @@ const Produzivanje = () => {
                             )}
 
                             {discountError && (
-                                <div className="produzivanje-discount-error">
+                                <div className={styles.discountError}>
                                     <FiAlertCircle /> {discountError}
                                 </div>
                             )}
 
                             {discountApplied && (
-                                <div className="produzivanje-discount-success">
+                                <div className={styles.discountSuccess}>
                                     <FiCheck /> Popust će biti primenjen na izabrani paket
                                 </div>
                             )}
@@ -275,7 +274,7 @@ const Produzivanje = () => {
                     </motion.div>
 
                     <motion.div
-                        className="produzivanje-cards"
+                        className={styles.cards}
                         variants={containerVariants}
                         initial="hidden"
                         animate={isInView ? "visible" : "hidden"}
@@ -287,53 +286,53 @@ const Produzivanje = () => {
                             return (
                                 <motion.div
                                     key={index}
-                                    className={`produzivanje-card ${plan.highlight ? "highlight" : ""}`}
+                                    className={`${styles.card} ${plan.highlight ? styles.highlight : ""}`}
                                     variants={cardVariants}
                                 >
                                     {plan.highlight && (
-                                        <div className="produzivanje-badge">NAJPOPULARNIJE</div>
+                                        <div className={styles.badge}>NAJPOPULARNIJE</div>
                                     )}
 
-                                    <div className="produzivanje-card-icon">{plan.icon}</div>
-                                    <h2 className="produzivanje-card-title">{plan.title}</h2>
-                                    <p className="produzivanje-card-description">{plan.description}</p>
+                                    <div className={styles.cardIcon}>{plan.icon}</div>
+                                    <h2 className={styles.cardTitle}>{plan.title}</h2>
+                                    <p className={styles.cardDescription}>{plan.description}</p>
 
-                                    <div className="produzivanje-card-price">
+                                    <div className={styles.cardPrice}>
                                         {hasDiscount ? (
                                             <>
-                                                <span className="produzivanje-price-original">{plan.price}</span>
-                                                <span className="produzivanje-price-amount produzivanje-price-discounted">
+                                                <span className={styles.priceOriginal}>{plan.price}</span>
+                                                <span className={`${styles.priceAmount} ${styles.priceDiscounted}`}>
                                                     {Math.floor(finalPrice / 117.3)}€
                                                 </span>
                                             </>
                                         ) : (
-                                            <span className="produzivanje-price-amount">{plan.price}</span>
+                                            <span className={styles.priceAmount}>{plan.price}</span>
                                         )}
-                                        <span className="produzivanje-price-period">{plan.period}</span>
+                                        <span className={styles.pricePeriod}>{plan.period}</span>
                                     </div>
 
                                     {hasDiscount && (
-                                        <div className="produzivanje-savings-badge">
+                                        <div className={styles.savingsBadge}>
                                             Ušteda: {Math.floor((plan.priceNumeric - finalPrice) / 117.3)}€
                                         </div>
                                     )}
 
-                                    <div className="produzivanje-duration">
-                                        <FiCheck className="duration-icon" />
+                                    <div className={styles.duration}>
+                                        <FiCheck className={styles.durationIcon} />
                                         <span>Produženje za {plan.duration}</span>
                                     </div>
 
-                                    <ul className="produzivanje-features">
+                                    <ul className={styles.features}>
                                         {plan.features.map((feature, i) => (
                                             <li key={i}>
-                                                <FiCheck className="feature-icon" />
+                                                <FiCheck className={styles.featureIcon} />
                                                 {feature}
                                             </li>
                                         ))}
                                     </ul>
 
                                     <button
-                                        className="produzivanje-button"
+                                        className={styles.button}
                                         onClick={() => handleRenewalClick(plan)}
                                     >
                                         Produži sada
@@ -345,31 +344,31 @@ const Produzivanje = () => {
 
                     {/* Payment & Security Logos */}
                     <motion.div
-                        className="paket-logos-wrapper"
+                        className={styles.logosWrapper}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.4, duration: 0.6 }}
                     >
-                        <div className="paket-logos-container">
-                            <div className="logos-group security-group">
+                        <div className={styles.logosContainer}>
+                            <div className={styles.logosGroup}>
                                 <a href="https://rs.visa.com/pay-withvisa/security-and-assistance/protected-everywhere.html" target="_blank" rel="noopener noreferrer">
-                                    <img src={visaSecure} alt="Visa Secure" className="logo-img" />
+                                    <img src={visaSecure} alt="Visa Secure" className={styles.logoImg} />
                                 </a>
                                 <a href="http://www.mastercard.com/rs/consumer/credit-cards.html" target="_blank" rel="noopener noreferrer">
-                                    <img src={mcIdCheck} alt="Mastercard ID Check" className="logo-img" />
+                                    <img src={mcIdCheck} alt="Mastercard ID Check" className={styles.logoImg} />
                                 </a>
                             </div>
 
                             {/* Spacer div to enforce separation */}
 
-                            <div className="logos-group payment-group">
-                                <img src={maestro} alt="Maestro" className="logo-img" />
-                                <img src={mastercard} alt="Mastercard" className="logo-img" />
-                                <img src={dina} alt="DinaCard" className="logo-img" />
-                                <img src={visa} alt="Visa" className="logo-img" />
+                            <div className={styles.logosGroup}>
+                                <img src={maestro} alt="Maestro" className={styles.logoImg} />
+                                <img src={mastercard} alt="Mastercard" className={styles.logoImg} />
+                                <img src={dina} alt="DinaCard" className={styles.logoImg} />
+                                <img src={visa} alt="Visa" className={styles.logoImg} />
                                 <a href="https://chipcard.rs/ecommerce/" target="_blank" rel="noopener noreferrer">
-                                    <img src={chipcard} alt="ChipCard" className="logo-img" style={{ height: '35px' }} />
+                                    <img src={chipcard} alt="ChipCard" className={styles.logoImg} style={{ height: '35px' }} />
                                 </a>
                             </div>
                         </div>

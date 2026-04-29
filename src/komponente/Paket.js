@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { FiCheck, FiArrowRight } from "react-icons/fi";
 import { useAuth } from '../login/auth';
@@ -21,6 +21,10 @@ const Paket = () => {
   const navigate = useNavigate();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const plans = [
     {
@@ -51,8 +55,7 @@ const Paket = () => {
         "Sve iz Digital Masterclass paketa",
         "1-na-1 online i uživo konsultacije",
         "Detaljna analiza i korekcija tvojih radova",
-        "Marketing i saveti za vođenje salona",
-        "Internacionalno priznat sertifikat"
+        "Marketing i saveti za vođenje salona"
       ]
     }
   ];

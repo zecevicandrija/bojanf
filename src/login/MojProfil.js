@@ -162,14 +162,13 @@ const MojProfil = () => {
                             <h1 className="welcome-title">
                                 Dobrodošli u <span className="gradient-text">Akademiju</span>!
                             </h1>
-                            <p className="welcome-subtitle">Uspešno ste se pridružili zajednici kreativaca.</p>
+                            <p className="welcome-subtitle">Uspešno ste se pridružili zajednici.</p>
                         </motion.div>
 
                         <div className="welcome-info-grid">
                             {[
                                 { icon: <FiMail />, title: "Proverite Email", desc: "Podaci za login su poslati na vašu adresu." },
                                 { icon: <FiKey />, title: "Pristupite Platformi", desc: "Koristite dobijenu lozinku za prvu prijavu." },
-                                { icon: <FiMessageCircle />, title: "Discord", desc: "Ne zaboravite našu zajednicu!" }
                             ].map((item, idx) => (
                                 <motion.div
                                     key={idx}
@@ -338,9 +337,9 @@ const MojProfil = () => {
                                     </div>
                                 ) : imaAktivnuPretplatu ? (
                                     <div className="billing-glass-card cancelled-sub">
-                                        <p className="notice-text">Produžavanje je otkazano. Pristup traje do: <strong>{new Date(user.subscription_expires_at).toLocaleDateString()}</strong></p>
+                                        <p className="notice-text">Automatsko produžavanje je otkazano. Pristup traje do: <strong>{new Date(user.subscription_expires_at).toLocaleDateString()}</strong></p>
                                         <button onClick={handleReactivateSubscription} className="reactivate-btn" disabled={cancelLoading}>
-                                            PONOVA AKTIVIRAJ
+                                            PONOVO AKTIVIRAJ
                                         </button>
                                     </div>
                                 ) : null}

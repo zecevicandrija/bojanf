@@ -2,16 +2,14 @@ import React from 'react';
 import { RiScissorsLine } from 'react-icons/ri';
 import styles from './Zid.module.css';
 
-import slika1 from '../images/bojanslike/slika1.webp';
-import slika2 from '../images/bojanslike/slika2.webp';
 import slika3 from '../images/bojanslike/slika3.webp';
 import slika4 from '../images/bojanslike/slika4.webp';
 import slika5 from '../images/bojanslike/slika5.webp';
 import slika6 from '../images/bojanslike/slika6.webp';
 import slika7 from '../images/bojanslike/slika7.webp';
 import slika8 from '../images/bojanslike/slika8.webp';
-import slika12 from '../images/bojanslike/slika12.webp';
 import slika14 from '../images/bojanslike/slika14.webp';
+import slika16 from '../images/bojanslike/slika16.webp';
 
 const results = [
     { id: 1, type: 'large', img: slika3 },
@@ -21,7 +19,7 @@ const results = [
     { id: 5, type: 'tall', img: slika7 },
     { id: 6, type: 'wide', img: slika6 },
     { id: 7, type: 'small', img: slika8 },
-    { id: 8, type: 'small', img: slika12 },
+    { id: 8, type: 'small', img: slika16 },
     { id: 9, type: 'cta' }
 ];
 
@@ -48,7 +46,7 @@ const Zid = ({ navigate }) => {
                                 <div key={item.id} className={`${styles.card} ${styles.cardWide} ${styles.ctaCard}`}>
                                     <button
                                         className={styles.ctaPrimary}
-                                        onClick={() => navigate && navigate('/kursevi')}
+                                        onClick={() => navigate && navigate('/paket')}
                                     >
                                         <span>PRIDRUŽI SE</span>
                                         <RiScissorsLine className={styles.ctaIcon} />

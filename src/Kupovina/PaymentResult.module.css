@@ -1,0 +1,321 @@
+/* ===== Base Wrapper ===== */
+.paymentWrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0A0A0A;
+  color: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ===== Background layers (Hero Style) ===== */
+.noiseOverlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  background-size: 60px 60px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== Container ===== */
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 5%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* ===== Loading State ===== */
+.loadingContainer {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.spinnerGlow {
+  width: 80px;
+  height: 80px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 2px solid #ff0033;
+  border-radius: 50%;
+  animation: spin 1.2s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+  box-shadow: 0 0 30px rgba(255, 0, 51, 0.15);
+  position: relative;
+}
+
+.spinnerGlow::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border: 1px dashed rgba(255, 0, 51, 0.2);
+  border-radius: 50%;
+  animation: spin 8s linear infinite reverse;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  color: #fff;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* ===== Payment Card ===== */
+.paymentCard {
+  width: 100%;
+  max-width: 580px;
+  background: rgba(15, 15, 15, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%);
+  overflow: hidden;
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+}
+
+.paymentCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 5;
+}
+
+.success::before { background: linear-gradient(to right, #00FF88, transparent); }
+.failed::before { background: linear-gradient(to right, #ff0033, transparent); }
+.pending::before { background: linear-gradient(to right, #007BFF, transparent); }
+.cancelled::before { background: linear-gradient(to right, #FFD700, transparent); }
+
+/* Card Header */
+.statusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2.5rem 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.statusIconBox {
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.success .statusIconBox { color: #00FF88; border-color: rgba(0, 255, 136, 0.3); }
+.failed .statusIconBox { color: #ff0033; border-color: rgba(255, 0, 51, 0.3); }
+.pending .statusIconBox { color: #007BFF; border-color: rgba(0, 123, 255, 0.3); }
+.cancelled .statusIconBox { color: #FFD700; border-color: rgba(255, 215, 0, 0.3); }
+
+.statusLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Card Content */
+.paymentContent {
+  padding: 3.5rem 3rem;
+  text-align: left;
+}
+
+.paymentContent h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  color: #fff;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.paymentContent p {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 300;
+  color: #A3A3A3;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+  font-size: 0.95rem;
+  max-width: 400px;
+}
+
+/* Details Box */
+.premiumDetailsBox {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.75rem;
+  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dLabel {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.6rem;
+  color: #555;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dValue {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.success .dValue { color: #00FF88; }
+.failed .dValue { color: #ff0033; }
+
+/* Actions */
+.paymentActions {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.primaryBtn {
+  background-color: #ff0033;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 1.15rem 2rem;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  transition: all 0.3s ease;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  box-shadow: 0 0 20px rgba(255, 0, 51, 0.15);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 0, 51, 0.3);
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  padding: 1.15rem 2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.secondaryBtn:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btnIcon {
+  font-size: 1.1rem;
+}
+
+/* Shine effect like in some premium buttons */
+.btnShine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transition: all 0.6s;
+}
+
+.primaryBtn:hover .btnShine {
+  left: 100%;
+}
+
+@media (max-width: 768px) {
+  .paymentCard {
+    max-width: 95%;
+  }
+
+  .paymentContent {
+    padding: 2.5rem 2rem;
+  }
+  
+  .statusHeader {
+    padding: 1.5rem 2rem;
+  }
+
+  .paymentContent h1 {
+    font-size: 2rem;
+  }
+
+  .paymentActions {
+    flex-direction: column;
+  }
+}

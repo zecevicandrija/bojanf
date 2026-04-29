@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RiArrowDownLine, RiScissorsLine } from 'react-icons/ri';
 import styles from './FAQ.module.css';
+import { Link } from 'react-router-dom';
 
 const FAQ = () => {
     const [openIndex, setOpenIndex] = useState(null);
@@ -39,10 +40,10 @@ const FAQ = () => {
                         <p className={styles.description}>
                             Znaš da ti ovo treba. Ako se i dalje dvoumiš, pročitaj odgovore ispod. Ako tvog pitanja nema, pošalji nam poruku.
                         </p>
-                        <button className={styles.ctaButton}>
+                        <Link to="/paket" className={styles.ctaButton}>
                             <span>ZAPOČNI KURS</span>
                             <RiScissorsLine className={styles.ctaIcon} />
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
